@@ -1,0 +1,184 @@
+[gd_scene format=3 uid="uid://byoluh3hi8nv7"]
+
+[ext_resource type="PackedScene" uid="uid://drbja2juy0ilo" path="res://scenes/player/player.tscn" id="1_1eu8g"]
+[ext_resource type="PackedScene" uid="uid://d3r04060idtc5" path="res://scenes/enemies/bat_creature.tscn" id="1_5em8h"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/eco_creature.tscn" id="1_nh71s"]
+[ext_resource type="Script" uid="uid://f530yuuec2yg" path="res://scripts/items/pickup_item.gd" id="2_j5h0l"]
+[ext_resource type="Script" uid="uid://djsbompm1sofu" path="res://scripts/systems/mission_manager.gd" id="3_121kc"]
+[ext_resource type="Script" uid="uid://dnww57a34ljpm" path="res://scripts/world/locked_door.gd" id="4_121kc"]
+[ext_resource type="Script" uid="uid://decjvp8st5re4" path="res://scripts/world/hiding_spot.gd" id="5_r8w3u"]
+[ext_resource type="Script" uid="uid://bjjlywpr0uo6g" path="res://scripts/world/power_generator.gd" id="6_eygub"]
+[ext_resource type="Script" uid="uid://cndotf3jy8fwg" path="res://scripts/world/elevator.gd" id="7_tfgud"]
+[ext_resource type="Script" uid="uid://c320rro6gvdsj" path="res://scripts/world/puddle.gd" id="8_wawj5"]
+[ext_resource type="Script" uid="uid://byainblu1kosd" path="res://scripts/world/flicker_lamp.gd" id="9_0j6g7"]
+[ext_resource type="Script" uid="uid://bn7vob6mvack4" path="res://scripts/world/trap_zone.gd" id="10_6wumb"]
+[ext_resource type="Script" uid="uid://di5aule1gs8pg" path="res://scripts/world/trap_lever.gd" id="11_tl1fn"]
+[ext_resource type="Script" uid="uid://b5qxefigrcj6" path="res://scripts/enemies/maze_nav.gd" id="13_vrp2h"]
+[ext_resource type="Script" uid="uid://dxvkeksswbyc7" path="res://scripts/world/siren_speaker.gd" id="14_vrp2h"]
+[ext_resource type="Script" uid="uid://vwrspiilj6o6" path="res://scripts/world/ambient_drip.gd" id="15_m3ngi"]
+[ext_resource type="Script" uid="uid://dgsw1xjdm1io1" path="res://scripts/world/incinerator.gd" id="16_2qgd3"]
+[ext_resource type="Script" uid="uid://c0jdjw7dwedn0" path="res://scripts/world/fungus_glow.gd" id="17_ca5t7"]
+[ext_resource type="Script" uid="uid://d2o6iklvnkke" path="res://scripts/world/heart_tunnel.gd" id="18_awskc"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_qapyn"]
+size = Vector3(20, 1, 20)
+
+[sub_resource type="BoxMesh" id="BoxMesh_qapyn"]
+size = Vector3(20, 1, 20)
+
+[node name="Prueba" type="Node3D" unique_id=221687691]
+
+[node name="EcoCreature" parent="." unique_id=944195449 instance=ExtResource("1_nh71s")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, -8)
+
+[node name="BatCreature" parent="." unique_id=639068116 instance=ExtResource("1_5em8h")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, -8)
+
+[node name="Player" parent="." unique_id=251400682 instance=ExtResource("1_1eu8g")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+
+[node name="Suelo" type="StaticBody3D" parent="." unique_id=1198035933]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Suelo" unique_id=1680888247]
+shape = SubResource("BoxShape3D_qapyn")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Suelo" unique_id=326016342]
+mesh = SubResource("BoxMesh_qapyn")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=4708441]
+transform = Transform3D(0.8660254, -0.38302222, 0.32139382, 0, 0.64278764, 0.76604444, -0.5, -0.66341394, 0.5566704, 0, 0, 0)
+visible = false
+
+[node name="Linterna" type="StaticBody3D" parent="." unique_id=120425952]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3)
+script = ExtResource("2_j5h0l")
+item_id = "linterna"
+metadata/_custom_type_script = "uid://f530yuuec2yg"
+
+[node name="MissionManager" type="Node" parent="." unique_id=1575181147 groups=["mission_manager"]]
+script = ExtResource("3_121kc")
+metadata/_custom_type_script = "uid://djsbompm1sofu"
+
+[node name="Puerta" type="StaticBody3D" parent="." unique_id=2060899465]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -8)
+script = ExtResource("4_121kc")
+metadata/_custom_type_script = "uid://dnww57a34ljpm"
+
+[node name="Llave_enfermeria" type="StaticBody3D" parent="." unique_id=2082774361]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -2)
+script = ExtResource("2_j5h0l")
+item_id = "llave_enfermeria"
+metadata/_custom_type_script = "uid://f530yuuec2yg"
+
+[node name="Fusible1" type="StaticBody3D" parent="." unique_id=1916247108]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -4)
+script = ExtResource("2_j5h0l")
+metadata/_custom_type_script = "uid://f530yuuec2yg"
+
+[node name="Pistola" type="StaticBody3D" parent="." unique_id=878317305]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 3)
+script = ExtResource("2_j5h0l")
+item_id = "pistola"
+metadata/_custom_type_script = "uid://f530yuuec2yg"
+
+[node name="Dardos" type="StaticBody3D" parent="." unique_id=2103649775]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 3)
+script = ExtResource("2_j5h0l")
+item_id = "dardos"
+metadata/_custom_type_script = "uid://f530yuuec2yg"
+
+[node name="Botella" type="StaticBody3D" parent="." unique_id=1948365302]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 3)
+script = ExtResource("2_j5h0l")
+item_id = "botella"
+metadata/_custom_type_script = "uid://f530yuuec2yg"
+
+[node name="Bengala" type="StaticBody3D" parent="." unique_id=607747435]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 3)
+script = ExtResource("2_j5h0l")
+item_id = "bengala"
+metadata/_custom_type_script = "uid://f530yuuec2yg"
+
+[node name="Fusible_ascensor" type="StaticBody3D" parent="." unique_id=464256774]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 4)
+script = ExtResource("2_j5h0l")
+item_id = "fusible_ascensor"
+metadata/_custom_type_script = "uid://f530yuuec2yg"
+
+[node name="Fusible2" type="StaticBody3D" parent="." unique_id=1174967084]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -6)
+script = ExtResource("2_j5h0l")
+metadata/_custom_type_script = "uid://f530yuuec2yg"
+
+[node name="Fusible3" type="StaticBody3D" parent="." unique_id=15650580]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -8)
+script = ExtResource("2_j5h0l")
+metadata/_custom_type_script = "uid://f530yuuec2yg"
+
+[node name="Casillero" type="StaticBody3D" parent="." unique_id=502951733]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -4, 0, -2)
+script = ExtResource("5_r8w3u")
+metadata/_custom_type_script = "uid://decjvp8st5re4"
+
+[node name="Generador" type="StaticBody3D" parent="." unique_id=1053212214]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6, 0, -6)
+script = ExtResource("6_eygub")
+
+[node name="Ascensor" type="Node3D" parent="." unique_id=1428931471]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 5)
+script = ExtResource("7_tfgud")
+
+[node name="Charco" type="Area3D" parent="." unique_id=118515715]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
+script = ExtResource("8_wawj5")
+
+[node name="Lampara" type="OmniLight3D" parent="." unique_id=2103797436]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+script = ExtResource("9_0j6g7")
+
+[node name="ZonaTrampa" type="Node3D" parent="." unique_id=2111851436]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 6)
+script = ExtResource("10_6wumb")
+
+[node name="Palanca" type="StaticBody3D" parent="." unique_id=1523310288]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 3, 0, 9)
+script = ExtResource("11_tl1fn")
+
+[node name="NavLaberinto" type="Node" parent="." unique_id=10868848 groups=["maze_nav"]]
+script = ExtResource("13_vrp2h")
+
+[node name="Sirena" type="Node3D" parent="." unique_id=1381715008]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, -4)
+script = ExtResource("14_vrp2h")
+
+[node name="Gotera" type="Node3D" parent="." unique_id=1458677564]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 2.5, 3)
+script = ExtResource("15_m3ngi")
+
+[node name="Incinerador" type="StaticBody3D" parent="." unique_id=1073021272]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 4)
+script = ExtResource("16_2qgd3")
+
+[node name="Bidon1" type="StaticBody3D" parent="." unique_id=81027368]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)
+script = ExtResource("2_j5h0l")
+item_id = "bidon_combustible"
+
+[node name="Bidon2" type="StaticBody3D" parent="." unique_id=1584332264]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 1.5)
+script = ExtResource("2_j5h0l")
+item_id = "bidon_combustible"
+
+[node name="Hongos" type="Node3D" parent="." unique_id=1493337697]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 4)
+script = ExtResource("17_ca5t7")
+
+[node name="Hacha" type="StaticBody3D" parent="." unique_id=950321709]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 0)
+script = ExtResource("2_j5h0l")
+item_id = "hacha"
+
+[node name="TunelCorazon" type="Node3D" parent="." unique_id=1011020850]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 0)
+script = ExtResource("18_awskc")

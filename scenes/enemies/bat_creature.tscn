@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://d3r04060idtc5"]
+
+[ext_resource type="Script" uid="uid://b62c7khxa04o8" path="res://scripts/enemies/bat_creature.gd" id="1_xrem3"]
+[ext_resource type="Shader" uid="uid://2x4hcesta66h" path="res://assets/shaders/ps1.gdshader" id="2_1460n"]
+[ext_resource type="PackedScene" uid="uid://plwrhb4qnkw6" path="res://assets/models/enemies/bat_creature.gltf" id="3_gy37y"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qapyn"]
+radius = 0.4
+height = 2.2
+
+[node name="BatCreature" type="CharacterBody3D" unique_id=639068116 groups=["enemies"]]
+script = ExtResource("1_xrem3")
+ps1_shader = ExtResource("2_1460n")
+
+[node name="Model" parent="." unique_id=1530175023 instance=ExtResource("3_gy37y")]
+
+[node name="Collision" type="CollisionShape3D" parent="." unique_id=1491100642]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+shape = SubResource("CapsuleShape3D_qapyn")

@@ -1,0 +1,55 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/eco_creature.tscn" id="2_eco"]
+[ext_resource type="Script" path="res://scripts/world/level_builder.gd" id="3_builder"]
+[ext_resource type="Script" path="res://scripts/enemies/maze_nav.gd" id="4_nav"]
+[ext_resource type="Script" path="res://scripts/systems/mission_manager.gd" id="5_mission"]
+[ext_resource type="Script" path="res://scripts/systems/debug_noise.gd" id="6_debug"]
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 1
+background_color = Color(0, 0, 0, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.12, 0.2, 0.14, 1)
+ambient_light_energy = 0.22
+fog_enabled = true
+fog_light_color = Color(0.02, 0.05, 0.03, 1)
+fog_density = 0.045
+
+[node name="Sotano" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_main")
+
+[node name="LevelBuilder" type="Node3D" parent="."]
+script = ExtResource("3_builder")
+origin = Vector3(-34, 0, -18)
+sanatorium = true
+decor = PackedStringArray("0,0,1,J", "0,0,4,R", "0,1,5,E", "0,2,0,E", "0,2,7,W", "0,3,3,J", "0,5,7,Y", "0,6,1,Y", "0,6,3,M", "0,7,0,P", "0,7,5,N", "0,8,8,W", "0,9,1,D", "0,10,5,C", "0,11,3,N", "0,12,0,Y", "0,12,8,Y", "0,14,1,A", "0,14,5,R", "0,16,0,P", "0,16,4,Y", "0,16,8,J", "1,0,0,P", "1,1,5,J", "1,2,3,E", "1,2,7,R", "1,3,8,Y", "1,4,1,Y", "1,5,4,Y", "1,5,8,P", "1,7,7,Y", "1,8,5,J", "1,9,8,Y", "1,11,1,H", "1,11,8,J", "1,12,3,Y", "1,13,0,H", "1,13,5,J", "1,14,1,Y", "1,14,7,Y", "1,15,3,C", "1,16,0,H", "1,16,4,J", "1,16,8,R")
+rooms = PackedStringArray("0,0,0,almacen", "0,1,0,almacen", "0,2,0,almacen", "0,3,0,almacen", "0,4,0,almacen", "0,6,0,caldera", "0,7,0,caldera", "0,8,0,caldera", "0,9,0,caldera", "0,11,0,agua", "0,12,0,agua", "0,13,0,agua", "0,14,0,agua", "0,15,0,agua", "0,16,0,agua", "0,0,1,almacen", "0,1,1,almacen", "0,2,1,almacen", "0,3,1,almacen", "0,4,1,almacen", "0,6,1,caldera", "0,7,1,caldera", "0,8,1,caldera", "0,9,1,caldera", "0,11,1,agua", "0,12,1,agua", "0,13,1,agua", "0,14,1,agua", "0,15,1,agua", "0,16,1,agua", "0,0,3,lab", "0,1,3,lab", "0,2,3,lab", "0,3,3,lab", "0,5,3,raiz", "0,6,3,raiz", "0,7,3,raiz", "0,8,3,raiz", "0,9,3,raiz", "0,10,3,raiz", "0,11,3,raiz", "0,13,3,celdas", "0,14,3,celdas", "0,15,3,celdas", "0,16,3,celdas", "0,0,4,lab", "0,1,4,lab", "0,2,4,lab", "0,3,4,lab", "0,5,4,raiz", "0,6,4,raiz", "0,7,4,raiz", "0,8,4,raiz", "0,9,4,raiz", "0,10,4,raiz", "0,11,4,raiz", "0,13,4,celdas", "0,14,4,celdas", "0,15,4,celdas", "0,16,4,celdas", "0,0,5,lab", "0,1,5,lab", "0,2,5,lab", "0,3,5,lab", "0,5,5,raiz", "0,6,5,raiz", "0,7,5,raiz", "0,8,5,raiz", "0,9,5,raiz", "0,10,5,raiz", "0,11,5,raiz", "0,13,5,celdas", "0,14,5,celdas", "0,15,5,celdas", "0,16,5,celdas", "0,0,7,celdas", "0,1,7,celdas", "0,2,7,celdas", "0,3,7,celdas", "0,5,7,almacen", "0,6,7,almacen", "0,7,7,almacen", "0,8,7,almacen", "0,9,7,almacen", "0,11,7,agua", "0,12,7,agua", "0,13,7,agua", "0,14,7,agua", "0,15,7,agua", "0,16,7,agua", "0,0,8,celdas", "0,1,8,celdas", "0,2,8,celdas", "0,3,8,celdas", "0,5,8,almacen", "0,6,8,almacen", "0,7,8,almacen", "0,8,8,almacen", "0,9,8,almacen", "0,11,8,agua", "0,12,8,agua", "0,13,8,agua", "0,14,8,agua", "0,15,8,agua", "0,16,8,agua", "1,0,0,maq", "1,1,0,maq", "1,2,0,maq", "1,3,0,maq", "1,4,0,maq", "1,11,0,frio", "1,12,0,frio", "1,13,0,frio", "1,14,0,frio", "1,15,0,frio", "1,16,0,frio", "1,0,1,maq", "1,1,1,maq", "1,2,1,maq", "1,3,1,maq", "1,4,1,maq", "1,11,1,frio", "1,12,1,frio", "1,13,1,frio", "1,14,1,frio", "1,15,1,frio", "1,16,1,frio", "1,0,3,celdas", "1,1,3,celdas", "1,2,3,celdas", "1,3,3,celdas", "1,5,3,lab", "1,6,3,lab", "1,7,3,lab", "1,8,3,lab", "1,9,3,caldera", "1,10,3,caldera", "1,11,3,caldera", "1,12,3,caldera", "1,13,3,caldera", "1,14,3,caldera", "1,15,3,caldera", "1,16,3,caldera", "1,0,4,celdas", "1,1,4,celdas", "1,2,4,celdas", "1,3,4,celdas", "1,5,4,lab", "1,6,4,lab", "1,7,4,lab", "1,8,4,lab", "1,9,4,caldera", "1,10,4,caldera", "1,11,4,caldera", "1,12,4,caldera", "1,13,4,caldera", "1,14,4,caldera", "1,15,4,caldera", "1,16,4,caldera", "1,0,5,celdas", "1,1,5,celdas", "1,2,5,celdas", "1,3,5,celdas", "1,5,5,lab", "1,6,5,lab", "1,7,5,lab", "1,8,5,lab", "1,9,5,caldera", "1,10,5,caldera", "1,11,5,caldera", "1,12,5,caldera", "1,13,5,caldera", "1,14,5,caldera", "1,15,5,caldera", "1,16,5,caldera", "1,0,7,celdas", "1,1,7,celdas", "1,2,7,celdas", "1,3,7,celdas", "1,5,7,almacen", "1,6,7,almacen", "1,7,7,almacen", "1,8,7,almacen", "1,9,7,agua", "1,10,7,agua", "1,11,7,agua", "1,12,7,agua", "1,14,7,lab", "1,15,7,lab", "1,16,7,lab", "1,0,8,celdas", "1,1,8,celdas", "1,2,8,celdas", "1,3,8,celdas", "1,5,8,almacen", "1,6,8,almacen", "1,7,8,almacen", "1,8,8,almacen", "1,9,8,agua", "1,10,8,agua", "1,11,8,agua", "1,12,8,agua", "1,14,8,lab", "1,15,8,lab", "1,16,8,lab")
+theme = "sotano"
+lamp_energy = 0.28
+notes = Array[String](["Registro de mantenimiento:\nLas bombas se averiaron cuando eso empezó a anidar en la cámara central. Necesitan TRES fusibles: uno en los filtros (norte), otro en la cámara fría y otro en la propia sala de bombas.", "Nota del técnico:\nEl fusible del ascensor quedó en las calderas, junto a la pistola de dardos del guardia: aturde al espécimen unos segundos. Sin ese fusible el ascensor del ala oeste no anda.", "Libreta del Dr. Vega:\nEl espécimen que bajó del sanatorio es CIEGO: se guía por el sonido. Los charcos lo delatan, chapotear es como gritarle. Una botella lanzada [G] lo manda lejos a investigar. Las bengalas no le hacen nada.", "Inscripción en la pared:\nLA PUERTA PRINCIPAL NO DABA A LA CALLE. Solo hay una salida: la compuerta de evacuación, al fondo del ala este (sur). Necesita energía.", "Hoja de la sala de bombas:\nEl panel está al fondo. Cuando lo enciendas sonará la alarma de los filtros (norte) y el espécimen irá hacia allá. Baja en el ascensor y corre a la compuerta.", "Etiqueta de la cámara fría:\nLa llave de la sala de bombas está aquí dentro. Y la palanca del salón este electrifica el suelo marcado con franjas: si el espécimen lo pisa, queda paralizado un buen rato."])
+layout = "+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+\n#B h     a# #q d r F# #h   w S   f#\n+ + + + + + + + + + + + + + + + + +\n#    w n  # #n      # #  j       B#\n+#+#+ +#+#+ +#+1+#+#+ +#+#+ +#+#+#+\n#  d   o  #w p   o   d     o   w  #\n+#+ +#+#+ +#+#+#+ +#+#+#+ +#+#+ +#+\n#u      # #B   h        # #  h   u#\n+ + + + + + + + + + + + + +#+ + + +\n#  n w   o   w   z   w   o >#  w  #\n+ + + + + + + + + + + + + +#+ + + +\n#j     B# #j       d   B# #      r#\n+#+#+#+#+ +#+#+#+ +#+#+#+ +#+#+ +#+\n#  w d           o      #  d      #\n+#+ +#+#+ +#+#+ +#+#+ +#+#+ +#+#+#+\n#u h      #  w   o j# #  h   n   u#\n+#+ + + + + + + + + + + + + + + + +\n#e w   L# #B   d w     B   w      #\n+#+#+#+#+#+#+#+#+#+#+#+#+#+#+X+#+#+"
+layout_upper = "+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+\n#f   o   G#       #   #f   o     c#\n+ + + + + + + + + + + + + + + + + +\n#u n      #       #   #  u   n    #\n+#+#+3+#+#+ + + + + + +#+#+2+#+#+#+\n#    o       o    #  o       o    #\n+#+ +#+#+ +#+ +#+#+#+ +#+#+#+#+#+#+\n#u        #      j#p             u#\n+ + + + + + + + + + + + + +#+ + + +\n#    j  # #  T    #    z r#  o    #\n+ + + + + + + + + + + + + +#+ + + +\n#      T  #o      #         #    b#\n+#+#+#+#+ +#+ +#+#+#+#+#+#+#+ +#+#+\n#            o    #          o    #\n+#+ +#+#+ +#+ +#+#+#+ +#+#+ +#+ +#+\n#      u  #T      #r     u# #     #\n+#+ + + + + + + + + + + + + + + + +\n#e   o  # #    u  #  j    # #  T  #\n+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+"
+
+[node name="MazeNav" type="Node" parent="." groups=["maze_nav"]]
+script = ExtResource("4_nav")
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector3(-24, 0.05, 12)
+rotation = Vector3(0, -1.5707964, 0)
+
+[node name="EcoCreature" parent="." instance=ExtResource("2_eco")]
+position = Vector3(0, 0.05, 0)
+
+[node name="MissionManager" type="Node" parent="."]
+script = ExtResource("5_mission")
+profile = "sotano"
+next_level = ""
+intro_title = "NIVEL 2: LOS SÓTANOS"
+intro_text = "La puerta principal no daba a la calle: bajaba a los sótanos. Algo sin ojos escucha cada paso. Si oyes un chasquido grave, quédate INMÓVIL. Los charcos delatan tus pasos; los casilleros y los tanques sirven de escondite. Esta vez hay dos pisos y herramientas para aturdirlo."
+
+[node name="DebugNoise" type="Node" parent="."]
+script = ExtResource("6_debug")

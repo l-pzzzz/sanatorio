@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://drbja2juy0ilo"]
+
+[ext_resource type="Script" uid="uid://drmt8g2blj8vp" path="res://scripts/player/player.gd" id="1_8afob"]
+[ext_resource type="Texture2D" uid="uid://bga3kbbtpv5c7" path="res://assets/player/hands_idle.png" id="2_dovo2"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qapyn"]
+radius = 0.35
+height = 1.8
+
+[node name="Player" type="CharacterBody3D" unique_id=251400682 groups=["player"]]
+script = ExtResource("1_8afob")
+
+[node name="Collision" type="CollisionShape3D" parent="." unique_id=1465365322]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_qapyn")
+
+[node name="Head" type="Node3D" parent="." unique_id=1094908770]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Head" unique_id=198146128]
+current = true
+
+[node name="HandsLayer" type="CanvasLayer" parent="." unique_id=1166306096]
+
+[node name="Hands" type="TextureRect" parent="HandsLayer" unique_id=1763120776]
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+texture = ExtResource("2_dovo2")
+expand_mode = 1

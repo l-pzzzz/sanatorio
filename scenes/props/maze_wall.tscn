@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://dfq35j4j5ap54"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kegsr"]
+albedo_color = Color(0.22, 0.2, 0.24, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_h4l0m"]
+size = Vector3(4.4, 3, 0.4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_6sldi"]
+size = Vector3(4.4, 3, 0.4)
+
+[node name="MazeWall" type="StaticBody3D" unique_id=2066806209 groups=["maze_walls"]]
+
+[node name="Mesh" type="MeshInstance3D" parent="." unique_id=1413534559]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+material_override = SubResource("StandardMaterial3D_kegsr")
+mesh = SubResource("BoxMesh_h4l0m")
+
+[node name="Collision" type="CollisionShape3D" parent="." unique_id=2012271559]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("BoxShape3D_6sldi")

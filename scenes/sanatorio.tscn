@@ -1,0 +1,92 @@
+[gd_scene format=3 uid="uid://brbxcrhgss5ld"]
+
+[ext_resource type="PackedScene" uid="uid://drbja2juy0ilo" path="res://scenes/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://d3r04060idtc5" path="res://scenes/enemies/bat_creature.tscn" id="2_bat"]
+[ext_resource type="Script" uid="uid://diyfslhtvwpn0" path="res://scripts/world/level_builder.gd" id="3_builder"]
+[ext_resource type="Script" uid="uid://b5qxefigrcj6" path="res://scripts/enemies/maze_nav.gd" id="4_nav"]
+[ext_resource type="Script" uid="uid://djsbompm1sofu" path="res://scripts/systems/mission_manager.gd" id="5_mission"]
+[ext_resource type="Script" uid="uid://j50ir0kkeh0j" path="res://scripts/systems/debug_noise.gd" id="6_debug"]
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 1
+ambient_light_source = 2
+ambient_light_color = Color(0.2, 0.24, 0.3, 1)
+ambient_light_energy = 0.3
+fog_enabled = true
+fog_light_color = Color(0.03, 0.04, 0.05, 1)
+fog_density = 0.03
+
+[node name="Sanatorio" type="Node3D" unique_id=1324388282]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2059035404]
+environment = SubResource("Environment_main")
+
+[node name="LevelBuilder" type="Node3D" parent="." unique_id=2069861837]
+script = ExtResource("3_builder")
+origin = Vector3(-30, 0, -18)
+sanatorium = true
+decor = PackedStringArray("0,0,0,E", "0,0,3,E", "0,0,5,E", "0,0,7,W", "0,2,1,W", "0,2,3,W", "0,3,0,A", "0,3,8,W", "0,5,0,R", "0,5,3,C", "0,6,1,C", "0,7,0,C", "0,7,3,R", "0,7,4,C", "0,8,7,C", "0,10,0,Y", "0,10,3,E", "0,10,5,C", "0,10,7,Y", "0,11,0,A", "0,12,1,Y", "0,12,7,Y", "0,13,8,W", "0,14,4,W", "1,1,0,E", "1,1,8,W", "1,2,1,W", "1,2,3,E", "1,2,4,E", "1,2,7,W", "1,4,0,R", "1,5,0,N", "1,6,0,M", "1,6,4,C", "1,6,8,A", "1,7,0,N", "1,7,1,M", "1,7,7,R", "1,8,1,D", "1,9,0,Y", "1,10,1,P", "1,10,4,Y", "1,14,4,P")
+rooms = PackedStringArray("0,0,0,dorm", "0,1,0,dorm", "0,2,0,dorm", "0,3,0,oficina", "0,4,0,oficina", "0,5,0,oficina", "0,6,0,enf", "0,7,0,enf", "0,8,0,enf", "0,9,0,almacen", "0,10,0,almacen", "0,11,0,almacen", "0,12,0,hall", "0,13,0,hall", "0,14,0,hall", "0,0,1,dorm", "0,1,1,dorm", "0,2,1,dorm", "0,3,1,oficina", "0,4,1,oficina", "0,5,1,oficina", "0,6,1,enf", "0,7,1,enf", "0,8,1,enf", "0,9,1,almacen", "0,10,1,almacen", "0,11,1,almacen", "0,12,1,hall", "0,13,1,hall", "0,14,1,hall", "0,0,3,dorm", "0,1,3,dorm", "0,2,3,dorm", "0,3,3,dorm", "0,5,3,patio", "0,6,3,patio", "0,7,3,patio", "0,10,3,enf", "0,11,3,enf", "0,12,3,enf", "0,13,3,enf", "0,14,3,enf", "0,0,4,dorm", "0,1,4,dorm", "0,2,4,dorm", "0,3,4,dorm", "0,5,4,patio", "0,6,4,patio", "0,7,4,patio", "0,10,4,enf", "0,11,4,enf", "0,12,4,enf", "0,13,4,enf", "0,14,4,enf", "0,0,5,dorm", "0,1,5,dorm", "0,2,5,dorm", "0,3,5,dorm", "0,5,5,patio", "0,6,5,patio", "0,7,5,patio", "0,10,5,enf", "0,11,5,enf", "0,12,5,enf", "0,13,5,enf", "0,14,5,enf", "0,0,7,cocina", "0,1,7,cocina", "0,2,7,cocina", "0,3,7,cocina", "0,4,7,cocina", "0,6,7,hall", "0,7,7,hall", "0,8,7,hall", "0,9,7,hall", "0,10,7,hall", "0,11,7,hall", "0,12,7,hall", "0,13,7,hall", "0,14,7,hall", "0,0,8,cocina", "0,1,8,cocina", "0,2,8,cocina", "0,3,8,cocina", "0,4,8,cocina", "0,6,8,hall", "0,7,8,hall", "0,8,8,hall", "0,9,8,hall", "0,10,8,hall", "0,11,8,hall", "0,12,8,hall", "0,13,8,hall", "0,14,8,hall", "1,0,0,oficina", "1,1,0,oficina", "1,2,0,oficina", "1,3,0,oficina", "1,4,0,oficina", "1,5,0,lab", "1,6,0,lab", "1,7,0,lab", "1,8,0,maq", "1,9,0,maq", "1,10,0,maq", "1,0,1,oficina", "1,1,1,oficina", "1,2,1,oficina", "1,3,1,oficina", "1,4,1,oficina", "1,5,1,lab", "1,6,1,lab", "1,7,1,lab", "1,8,1,maq", "1,9,1,maq", "1,10,1,maq", "1,0,3,dorm", "1,1,3,dorm", "1,2,3,dorm", "1,3,3,dorm", "1,5,3,aisla", "1,6,3,aisla", "1,7,3,aisla", "1,0,4,dorm", "1,1,4,dorm", "1,2,4,dorm", "1,3,4,dorm", "1,5,4,aisla", "1,6,4,aisla", "1,7,4,aisla", "1,8,4,lab", "1,9,4,lab", "1,10,4,lab", "1,12,4,maq", "1,13,4,maq", "1,14,4,maq", "1,0,5,dorm", "1,1,5,dorm", "1,2,5,dorm", "1,3,5,dorm", "1,8,5,lab", "1,9,5,lab", "1,10,5,lab", "1,12,5,maq", "1,13,5,maq", "1,14,5,maq", "1,0,7,aisla", "1,1,7,aisla", "1,2,7,aisla", "1,3,7,aisla", "1,5,7,cocina", "1,6,7,cocina", "1,7,7,cocina", "1,0,8,aisla", "1,1,8,aisla", "1,2,8,aisla", "1,3,8,aisla", "1,5,8,cocina", "1,6,8,cocina", "1,7,8,cocina")
+notes = Array[String](["Receta de la enfermería:
+El fusible del ascensor del ala este quedó guardado aquí. Y la pistola de dardos es del guardia: no mata, pero ATURDE a esa cosa unos segundos. Clic izquierdo para disparar.", "Diario del paciente 12:
+\"Me trajeron de noche. Dicen que es por mi descanso, pero oigo aletear detrás de las paredes. Nunca duermen.\"", "Cartel del ascensor:
+\"Ala este, 2.º piso: sala de máquinas y generador. FUERA DE SERVICIO: falta el fusible especial. Ojo: la cabina hace ruido al moverse.\"", "Nota de mantenimiento:
+\"Instalé una palanca en el patio central. Si esa cosa pisa las franjas amarillas del suelo y alguien tira de la palanca, se queda paralizada unos segundos. Se recarga sola.\"", "Nota del Dr. Vega:
+\"La criatura responde al sonido. Una botella lanzada [G] la hace correr hacia donde cae. Las bengalas [Q] la ciegan un instante: úsalas de frente.\"", "Informe del laboratorio:
+\"La llave de las máquinas está en esta sala. El ala este del segundo piso NO tiene escalera: solo se llega en el ascensor.\"", "Hoja de la sala de máquinas:
+\"Aquí quedó un fusible. Faltan otros dos repartidos por el edificio: un fusible en el almacén de la planta baja y otro en el laboratorio. El generador necesita TRES.\"", "Nota pegada al generador:
+\"Si lo enciende, la alarma de la cocina (ala oeste, planta baja) sonará y ESO la atraerá hacia allá. Aproveche para bajar en el ascensor y correr a la puerta principal.\""])
+layout = "+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+
+#  L  #  o a#q n r#T o f#k o e#
++ + + + + + + + + + + + + + +#+
+#m o n#u    #  o F#j   u#n    #
++#+ +#+#+ +#+#+1+#+#+ +#+#+ +#+
+#    o#          o       o    #
++#+ +#+#+ +#+ +#+ + +#+#+ +#+#+
+#         #     #   #  T     u#
++ + + +#+ + + + + +#+ + + + + +
+#u o   ># #u o n#z o     o    #
++ + + +#+ + + + + + + + + + + +
+#    j    #k   m#  p#  j     T#
++#+ +#+#+ +#+ +#+ + +#+#+#+ +#+
+#    o           o    #  o    #
++#+#+ +#+#+ +#+ +#+#+#+ +#+#+#+
+#  T o T  # #u     o     o   B#
++ + + + + + + + +#+#+ + + +#+ +
+#B   S   k       u   j       u#
++#+#+#+#+#+#+#+#+#+#+#+#+X+#+#+"
+layout_upper = "+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+
+#m n r#b o#  c f#T f k#  o   e#
++ + + + + + + + + + + + + + +#+
+#m o  #  u#u   n#  o n#       #
++#+ +#+#+ +#+2+#+#+3+#+ + + + +
+#    o       o  #  o       o  #
++#+ +#+#+ +#+ +#+ + + + + + + +
+#m        #T   m#      o      #
++ + + +#+ + + + +#+ +#+ +#+ +#+
+#u o  #      o k#j    # #  o  #
++ + + +#+ +#+#+#+ + + + + + + +
+#m   T     p    #T k r   n   G#
++#+ +#+#+ + + + +#+#+#+ +#+#+#+
+#    o   z      #         #   #
++#+ +#+#+ +#+ +#+ + + + + + + +
+#m     j# #T o  #  o  #T   o# #
++ + + + + + + + + + + + +#+ + +
+#u   T         u#   #         #
++#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+"
+
+[node name="MazeNav" type="Node" parent="." unique_id=435289451 groups=["maze_nav"]]
+script = ExtResource("4_nav")
+
+[node name="Player" parent="." unique_id=1320400267 instance=ExtResource("1_player")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -24, 0.05, -12)
+
+[node name="BatCreature" parent="." unique_id=2117059305 instance=ExtResource("2_bat")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.2, 12)
+
+[node name="MissionManager" type="Node" parent="." unique_id=1676852919]
+script = ExtResource("5_mission")
+next_level = "res://scenes/cinematica_caida.tscn"
+
+[node name="DebugNoise" type="Node" parent="." unique_id=1222749378]
+script = ExtResource("6_debug")
