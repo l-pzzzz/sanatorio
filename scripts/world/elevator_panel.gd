@@ -20,10 +20,10 @@ func get_prompt(_player: PlayerCharacter) -> String:
 	if elevator == null:
 		return ""
 	if not elevator.powered:
-		return "[E] Panel del ascensor (sin energía)"
+		return Lang.t("[E] Panel del ascensor (sin energía)")
 	if elevator.moving:
-		return "Ascensor en movimiento..."
-	return "[E] Llamar al ascensor" if call_floor >= 0 else "[E] Usar el ascensor"
+		return Lang.t("Ascensor en movimiento...")
+	return Lang.t("[E] Llamar al ascensor") if call_floor >= 0 else Lang.t("[E] Usar el ascensor")
 
 
 func interact(player: PlayerCharacter) -> void:

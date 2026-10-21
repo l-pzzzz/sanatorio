@@ -33,9 +33,9 @@ func _process(delta: float) -> void:
 
 
 func get_prompt(_player: PlayerCharacter) -> String:
-	return "[E] Leer nota"
+	return Lang.t("[E] Leer nota")
 
 
 func interact(_player: PlayerCharacter) -> void:
 	Sfx.play(self, "pickup", -14.0)
-	toast(text, read_seconds)
+	toast(Lang.t(text), read_seconds)

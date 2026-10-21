@@ -247,7 +247,7 @@ func _current_interactable() -> Node:
 
 func _update_prompt() -> void:
 	if is_hidden:
-		prompt_label.text = "[E] Salir del escondite   (no hagas ruido)"
+		prompt_label.text = Lang.t("[E] Salir del escondite   (no hagas ruido)")
 		return
 	var target := _current_interactable()
 	prompt_label.text = str(target.call("get_prompt", self)) if target else ""

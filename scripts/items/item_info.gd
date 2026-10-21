@@ -50,7 +50,7 @@ const HINTS := {"pistola": "[clic izq.]", "botella": "[G]", "bengala": "[Q]", "h
 
 
 static func display_name(id: String) -> String:
-	return str(NAMES.get(id, id))
+	return Lang.t(str(NAMES.get(id, id)))
 
 
 static func color_of(id: String) -> Color:

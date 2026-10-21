@@ -38,7 +38,7 @@ func _update_indicators() -> void:
 func get_prompt(_player: PlayerCharacter) -> String:
 	if running:
 		return ""
-	return "[E] Instalar fusibles (%d/%d)" % [inserted, fuses_needed]
+	return Lang.t("[E] Instalar fusibles (%d/%d)") % [inserted, fuses_needed]
 
 
 func interact(player: PlayerCharacter) -> void:
@@ -46,7 +46,7 @@ func interact(player: PlayerCharacter) -> void:
 		return
 	var have := player.count_item("fusible")
 	if have <= 0:
-		toast("El generador necesita %d fusibles. Instalados: %d/%d." % [fuses_needed, inserted, fuses_needed], 4.0)
+		toast(Lang.t("El generador necesita %d fusibles. Instalados: %d/%d.") % [fuses_needed, inserted, fuses_needed], 4.0)
 		return
 	var amount := mini(have, fuses_needed - inserted)
 	player.remove_item("fusible", amount)
@@ -61,4 +61,4 @@ func interact(player: PlayerCharacter) -> void:
 		if mm:
 			mm.report("power", "")
 	else:
-		toast("Fusibles instalados: %d/%d. Faltan %d." % [inserted, fuses_needed, fuses_needed - inserted], 3.5)
+		toast(Lang.t("Fusibles instalados: %d/%d. Faltan %d.") % [inserted, fuses_needed, fuses_needed - inserted], 3.5)

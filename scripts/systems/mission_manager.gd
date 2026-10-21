@@ -133,7 +133,7 @@ func _root_pulse_tick(delta: float) -> void:
 	Sfx.play(self, "gurgle", -2.0)
 	Sfx.play(self, "land", -8.0)
 	NoiseManager.emit_noise(player.global_position, 1.15)
-	show_toast("La raíz late... las criaturas saben dónde estás.", 3.0)
+	show_toast(Lang.t("La raíz late... las criaturas saben dónde estás."), 3.0)
 	var flash := ColorRect.new()
 	flash.color = Color(0.55, 0.0, 0.08, 0.0)
 	flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -192,9 +192,9 @@ func _on_power_restored() -> void:
 	get_tree().call_group("siren", "activate")
 	get_tree().call_group("doors", "refresh_lock_state")
 	if profile == "raiz":
-		show_toast("¡Energía restaurada! La alarma las atrae. Ahora decide: ESCAPAR por el conducto del sur, o conseguir 2 bidones y quemarlo todo en el incinerador de la raíz.", 9.0)
+		show_toast(Lang.t("¡Energía restaurada! La alarma las atrae. Ahora decide: ESCAPAR por el conducto del sur, o conseguir 2 bidones y quemarlo todo en el incinerador de la raíz."), 9.0)
 	else:
-		show_toast("¡Energía restaurada! Sonó la alarma y la criatura corre hacia allá. ¡Baja y corre a la salida!", 7.0)
+		show_toast(Lang.t("¡Energía restaurada! Sonó la alarma y la criatura corre hacia allá. ¡Baja y corre a la salida!"), 7.0)
 	alarm_timer = Timer.new()
 	alarm_timer.wait_time = alarm_interval
 	alarm_timer.timeout.connect(_alarm_pulse)
@@ -217,6 +217,7 @@ func on_player_caught(message := "EL MURCIÉLAGO TE ATRAPÓ", killer: Node3D = n
 	if state != State.PLAYING:
 		return
 	state = State.DEAD
+	message = Lang.t(message)
 	if killer != null and player != null:
 		_freeze_world(false)
 		for c in title_label.get_parent().get_children():
@@ -237,7 +238,7 @@ func on_player_caught(message := "EL MURCIÉLAGO TE ATRAPÓ", killer: Node3D = n
 func _on_heart_destroyed() -> void:
 	heart_destroyed = true
 	quake_t = 6.0
-	show_toast("¡El corazón cae! La raíz se resquebraja y toda la estructura tiembla... Ahora el fuego sí prenderá: lleva 2 bidones al incinerador (centro).", 9.0)
+	show_toast(Lang.t("¡El corazón cae! La raíz se resquebraja y toda la estructura tiembla... Ahora el fuego sí prenderá: lleva 2 bidones al incinerador (centro)."), 9.0)
 
 
 func _quake_tick(delta: float) -> void:
@@ -276,7 +277,7 @@ func _on_burn_start() -> void:
 	Sfx.play(self, "explosion", -2.0)
 	Sfx.play(self, "fire_loop", -4.0)
 	NoiseManager.emit_noise(player.global_position, 2.0)
-	show_toast("¡LA RAÍZ ARDE! El fuego se propaga por todo el nivel. ¡CORRE al túnel del noreste y sal antes de que te alcance!", 8.0)
+	show_toast(Lang.t("¡LA RAÍZ ARDE! El fuego se propaga por todo el nivel. ¡CORRE al túnel del noreste y sal antes de que te alcance!"), 8.0)
 	var layer := overlay.get_parent()
 	burn_overlay = ColorRect.new()
 	burn_overlay.color = Color(1.0, 0.35, 0.05, 0.0)
@@ -305,7 +306,7 @@ func _burn_tick(delta: float) -> void:
 	if burn_overlay:
 		burn_overlay.color.a = flicker
 	if burn_label:
-		burn_label.text = "¡SAL! %02d:%02d" % [floori(maxf(burn_left, 0.0) / 60.0), int(maxf(burn_left, 0.0)) % 60]
+		burn_label.text = Lang.t("¡SAL! %02d:%02d") % [floori(maxf(burn_left, 0.0) / 60.0), int(maxf(burn_left, 0.0)) % 60]
 	quake_t -= delta
 	if quake_t <= 0.0:
 		quake_t = randf_range(4.0, 7.0)
@@ -347,8 +348,8 @@ func _on_escape() -> void:
 	_freeze_world()
 	var minutes := floori(play_time / 60.0)
 	var seconds := int(play_time) % 60
-	_end_screen("¡ESCAPASTE!\nTiempo: %02d:%02d" % [minutes, seconds], Color(0.0, 0.0, 0.0),
-		"Enter para continuar" if next_level != "" else "Enter para volver a empezar")
+	_end_screen(Lang.t("¡ESCAPASTE!\nTiempo: %02d:%02d") % [minutes, seconds], Color(0.0, 0.0, 0.0),
+		Lang.t("Enter para continuar") if next_level != "" else Lang.t("Enter para volver a empezar"))
 
 
 func _freeze_world(show_mouse := true) -> void:
@@ -362,7 +363,9 @@ func _freeze_world(show_mouse := true) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
-func _end_screen(title: String, tint: Color, hint := "Enter para volver a empezar") -> void:
+func _end_screen(title: String, tint: Color, hint := "") -> void:
+	if hint == "":
+		hint = Lang.t("Enter para volver a empezar")
 	title_label.text = title + "\n\n(" + hint + ")"
 	title_label.modulate.a = 0.0
 	overlay.color = Color(tint.r, tint.g, tint.b, 0.0)
@@ -421,10 +424,10 @@ func _is_done(step: Dictionary) -> bool:
 
 func _step_text(step: Dictionary) -> String:
 	if str(step["kind"]) == "fuses":
-		return "Reúne los %d fusibles (%d/%d)" % [fuses_required, mini(fuses_collected, fuses_required), fuses_required]
+		return Lang.t("Reúne los %d fusibles (%d/%d)") % [fuses_required, mini(fuses_collected, fuses_required), fuses_required]
 	if "%d" in str(step["text"]) and player != null:
-		return str(step["text"]) % mini(player.count_item("bidon_combustible"), 2)
-	return str(step["text"])
+		return Lang.t(str(step["text"])) % mini(player.count_item("bidon_combustible"), 2)
+	return Lang.t(str(step["text"]))
 
 
 func _inventory_text() -> String:
@@ -432,7 +435,7 @@ func _inventory_text() -> String:
 		return ""
 	var parts := PackedStringArray()
 	if player.has_flashlight:
-		parts.append("Linterna [F]: %s" % ("ENCENDIDA" if player.flashlight_on else "apagada"))
+		parts.append(Lang.t("Linterna [F]: %s") % (Lang.t("ENCENDIDA") if player.flashlight_on else Lang.t("apagada")))
 	for id in player.inventory:
 		if id == "linterna":
 			continue
@@ -441,7 +444,7 @@ func _inventory_text() -> String:
 		if count > 1:
 			label = "%s x%d" % [label, count]
 		if ItemInfo.HINTS.has(id):
-			label += "  " + str(ItemInfo.HINTS[id])
+			label += "  " + Lang.t(str(ItemInfo.HINTS[id]))
 		parts.append(label)
 	return "\n".join(parts)
 
@@ -455,7 +458,7 @@ func _refresh() -> void:
 			mark = "[ ]" if current_found else "[>]"
 			current_found = true
 		lines.append("%s %s" % [mark, _step_text(step)])
-	objective_label.text = "\n".join(lines) if show_missions else "[Tab] Mostrar misiones"
+	objective_label.text = "\n".join(lines) if show_missions else Lang.t("[Tab] Mostrar misiones")
 	inventory_label.text = _inventory_text()
 
 
@@ -510,10 +513,10 @@ func _build_hud() -> void:
 
 func _play_intro() -> void:
 	overlay.color = Color(0, 0, 0, 1)
-	title_label.text = intro_title if intro_title != "" else INTRO_TITLE
+	title_label.text = Lang.t(intro_title if intro_title != "" else INTRO_TITLE)
 	title_label.modulate.a = 1.0
 	var tween := create_tween()
 	tween.tween_interval(2.2)
 	tween.tween_property(title_label, "modulate:a", 0.0, 1.0)
 	tween.parallel().tween_property(overlay, "color:a", 0.0, 1.4)
-	tween.tween_callback(show_toast.bind(intro_text if intro_text != "" else INTRO_TEXT, 9.0))
+	tween.tween_callback(show_toast.bind(Lang.t(intro_text if intro_text != "" else INTRO_TEXT), 9.0))

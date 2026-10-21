@@ -60,13 +60,13 @@ func _add_drum(radius: float, height: float, pos: Vector3, color: Color) -> void
 
 
 func _spot_name() -> String:
-	return "el tanque" if kind == "barrel" else "el casillero"
+	return Lang.t("el tanque") if kind == "barrel" else Lang.t("el casillero")
 
 
 func get_prompt(player: PlayerCharacter) -> String:
 	if player.hidden_in == self:
-		return "[E] Salir de %s" % _spot_name()
-	return "[E] Esconderte en %s" % _spot_name()
+		return Lang.t("[E] Salir de %s") % _spot_name()
+	return Lang.t("[E] Esconderte en %s") % _spot_name()
 
 
 func interact(player: PlayerCharacter) -> void:

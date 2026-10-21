@@ -79,7 +79,7 @@ func _process(delta: float) -> void:
 
 
 func get_prompt(_player: PlayerCharacter) -> String:
-	return "[E] Recoger: %s" % ItemInfo.display_name(item_id)
+	return Lang.t("[E] Recoger: %s") % ItemInfo.display_name(item_id)
 
 
 func interact(player: PlayerCharacter) -> void:
@@ -91,23 +91,23 @@ func interact(player: PlayerCharacter) -> void:
 	player.add_item(item_id, amount)
 	Sfx.play(self, "pickup")
 	if item_id == "linterna":
-		toast("Linterna: F para encender o apagar. Cuidado: la luz también te delata.", 5.0)
+		toast(Lang.t("Linterna: F para encender o apagar. Cuidado: la luz también te delata."), 5.0)
 	elif item_id == "pistola":
 		var extra := maxi(1, roundi(2 * float(Difficulty.get_value("supply_mul"))))
 		player.add_item("dardos", extra)
-		toast("Pistola de dardos: clic izquierdo dispara y ATURDE a la criatura unos segundos. Te dejo %d dardos." % extra, 6.0)
+		toast(Lang.t("Pistola de dardos: clic izquierdo dispara y ATURDE a la criatura unos segundos. Te dejo %d dardos.") % extra, 6.0)
 	elif item_id == "bidon_combustible":
-		toast("Bidón de combustible (%d). El incinerador de la sala de la raíz necesita 2." % player.count_item("bidon_combustible"), 5.0)
+		toast(Lang.t("Bidón de combustible (%d). El incinerador de la sala de la raíz necesita 2.") % player.count_item("bidon_combustible"), 5.0)
 	elif item_id == "hacha":
-		toast("Hacha oxidada: corta las raíces gruesas (puerta del túnel o del corazón). [E] sobre ellas.", 5.5)
+		toast(Lang.t("Hacha oxidada: corta las raíces gruesas (puerta del túnel o del corazón). [E] sobre ellas."), 5.5)
 	elif item_id == "botella":
-		toast("Botella x%d: [G] la lanzas; el ruido distrae a la criatura." % amount, 4.5)
+		toast(Lang.t("Botella x%d: [G] la lanzas; el ruido distrae a la criatura.") % amount, 4.5)
 	elif item_id == "bengala":
-		toast("Bengala: [Q] ciega unos segundos al murciélago que tengas enfrente. El Eco no ve, no le afecta.", 5.5)
+		toast(Lang.t("Bengala: [Q] ciega unos segundos al murciélago que tengas enfrente. El Eco no ve, no le afecta."), 5.5)
 	elif item_id == "dardos":
-		toast("+%d dardos" % amount, 2.5)
+		toast(Lang.t("+%d dardos") % amount, 2.5)
 	else:
-		toast("Recogiste: %s" % ItemInfo.display_name(item_id), 2.5)
+		toast(Lang.t("Recogiste: %s") % ItemInfo.display_name(item_id), 2.5)
 	var mission_manager := mission()
 	if mission_manager:
 		mission_manager.report("item", item_id)
