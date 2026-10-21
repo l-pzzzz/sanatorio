@@ -241,11 +241,11 @@ func _build_hud() -> void:
 	title_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	title_label.modulate.a = 0.0
-	title_label.text = "NIVEL 2\nLOS SÓTANOS"
+	title_label.text = Lang.t("NIVEL 2\nLOS SÓTANOS")
 	var skip := _label(layer, 14)
 	skip.autowrap_mode = TextServer.AUTOWRAP_OFF
 	skip.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	skip.text = "Enter: saltar"
+	skip.text = Lang.t("Enter: saltar")
 	skip.position = Vector2(14, 10)
 	skip.modulate.a = 0.5
 
@@ -329,7 +329,7 @@ func _animate() -> void:
 	var text := ""
 	for s in SUB:
 		if t >= float(s[0]) and t <= float(s[1]):
-			text = str(s[2])
+			text = Lang.t(str(s[2]))
 	subtitle.text = text
 	title_label.modulate.a = clampf((t - TITLE_AT) / 0.8, 0.0, 1.0) * (1.0 - smoothstep(25.6, 26.4, t))
 

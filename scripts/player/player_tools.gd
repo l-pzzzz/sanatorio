@@ -115,7 +115,7 @@ func _shoot() -> void:
 	if not player.has_item("pistola") or cooldown > 0.0:
 		return
 	if not player.has_item("dardos"):
-		_toast("Sin dardos. Busca una caja de dardos.", 2.0)
+		_toast(Lang.t("Sin dardos. Busca una caja de dardos."), 2.0)
 		cooldown = 0.5
 		return
 	cooldown = shot_cooldown
@@ -152,9 +152,9 @@ func _shoot() -> void:
 		end = target.global_position + Vector3(0, 0.9, 0)
 		if target.has_method("stun") and target.call("stun", dart_stun, "dart", player.global_position):
 			Sfx.play(self, "dart_hit", -2.0)
-			_toast("¡Le diste! Está aturdida unos segundos.", 2.0)
+			_toast(Lang.t("¡Le diste! Está aturdida unos segundos."), 2.0)
 		else:
-			_toast("Ya se está recuperando: no le hace efecto.", 2.0)
+			_toast(Lang.t("Ya se está recuperando: no le hace efecto."), 2.0)
 	_tracer(from + dir * 0.6 + camera.global_transform.basis.x * 0.12 - camera.global_transform.basis.y * 0.1, end)
 
 
@@ -255,4 +255,4 @@ func _flash() -> void:
 			continue    # una pared tapa la luz
 		if enemy.has_method("stun") and enemy.call("stun", flash_stun, "flash", player.global_position):
 			affected = true
-	_toast("¡La luz lo cegó!" if affected else "La bengala ilumina... pero no había nada que cegar.", 2.0)
+	_toast(Lang.t("¡La luz lo cegó!") if affected else Lang.t("La bengala ilumina... pero no había nada que cegar."), 2.0)

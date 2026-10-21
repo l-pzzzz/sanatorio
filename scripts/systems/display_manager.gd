@@ -31,7 +31,7 @@ func is_fullscreen() -> bool:
 
 func toggle_fullscreen() -> void:
 	if _embedded_in_editor():
-		_notify("Pantalla completa no disponible: el juego está incrustado en el editor.\nDesactiva \"Embed Game\" o exporta el juego (.exe).")
+		_notify(Lang.t("Pantalla completa no disponible: el juego está incrustado en el editor.\nDesactiva \"Embed Game\" o exporta el juego (.exe)."))
 		return
 	var enable := not is_fullscreen()
 	_apply(enable)

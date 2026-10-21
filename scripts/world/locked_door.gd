@@ -101,12 +101,12 @@ func get_prompt(player: PlayerCharacter) -> String:
 	if is_open or busy:
 		return ""
 	if lock_id == "hacha":
-		return "[E] Cortar las raíces con el hacha" if player.has_item(lock_id) else "Raíces gruesas bloquean el paso: necesitas un hacha"
+		return Lang.t("[E] Cortar las raíces con el hacha") if player.has_item(lock_id) else Lang.t("Raíces gruesas bloquean el paso: necesitas un hacha")
 	if _can_open(player):
-		return ("[E] Abrir %s" % exit_label) if is_exit else "[E] Abrir con la llave"
+		return (Lang.t("[E] Abrir %s") % Lang.t(exit_label)) if is_exit else Lang.t("[E] Abrir con la llave")
 	if lock_id == POWER:
-		return "%s (sin energía)" % exit_label.capitalize()
-	return "Puerta cerrada: falta %s" % ItemInfo.display_name(lock_id)
+		return Lang.t("%s (sin energía)") % Lang.t(exit_label).capitalize()
+	return Lang.t("Puerta cerrada: falta %s") % ItemInfo.display_name(lock_id)
 
 
 func interact(player: PlayerCharacter) -> void:
@@ -116,9 +116,9 @@ func interact(player: PlayerCharacter) -> void:
 		Sfx.play(self, "locked")
 		NoiseManager.emit_noise(global_position, 0.25)
 		if lock_id == POWER:
-			toast("La cerradura eléctrica no responde. Hay que restaurar la energía.", 3.5)
+			toast(Lang.t("La cerradura eléctrica no responde. Hay que restaurar la energía."), 3.5)
 		else:
-			toast("Está cerrada con llave. Necesitas: %s." % ItemInfo.display_name(lock_id), 3.5)
+			toast(Lang.t("Está cerrada con llave. Necesitas: %s.") % ItemInfo.display_name(lock_id), 3.5)
 		return
 	if lock_id != POWER and lock_id != FREE and not ROOT_KEYS.has(lock_id):
 		player.remove_item(lock_id)

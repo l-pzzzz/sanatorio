@@ -40,13 +40,13 @@ func get_prompt(player: PlayerCharacter) -> String:
 		return ""
 	var mm := mission()
 	if needs_power and mm and not mm.power_on:
-		return "Incinerador (sin energía)"
+		return Lang.t("Incinerador (sin energía)")
 	if needs_heart and mm and not mm.heart_destroyed:
-		return "Incinerador: la raíz sigue viva (destruye su corazón)"
+		return Lang.t("Incinerador: la raíz sigue viva (destruye su corazón)")
 	var have := player.count_item("bidon_combustible")
 	if have < bidons_needed:
-		return "Incinerador: faltan bidones (%d/%d)" % [have, bidons_needed]
-	return "[E] ENCENDER el incinerador (quemarlo todo)"
+		return Lang.t("Incinerador: faltan bidones (%d/%d)") % [have, bidons_needed]
+	return Lang.t("[E] ENCENDER el incinerador (quemarlo todo)")
 
 
 func interact(player: PlayerCharacter) -> void:
@@ -54,16 +54,16 @@ func interact(player: PlayerCharacter) -> void:
 		return
 	var mm := mission()
 	if needs_power and mm and not mm.power_on:
-		toast("El incinerador no tiene energía. Instala primero los fusibles en el generador.", 4.0)
+		toast(Lang.t("El incinerador no tiene energía. Instala primero los fusibles en el generador."), 4.0)
 		Sfx.play(self, "locked")
 		return
 	if needs_heart and mm and not mm.heart_destroyed:
-		toast("Las raíces son demasiado fuertes: el fuego no prende. Baja por el túnel del centro y destruye el CORAZÓN a hachazos.", 5.0)
+		toast(Lang.t("Las raíces son demasiado fuertes: el fuego no prende. Baja por el túnel del centro y destruye el CORAZÓN a hachazos."), 5.0)
 		Sfx.play(self, "locked")
 		return
 	var have := player.count_item("bidon_combustible")
 	if have < bidons_needed:
-		toast("Necesita %d bidones de combustible (llevas %d). Hay uno en las esporas (norte) y otro en las raíces del sur." % [bidons_needed, have], 4.5)
+		toast(Lang.t("Necesita %d bidones de combustible (llevas %d). Hay uno en las esporas (norte) y otro en las raíces del sur.") % [bidons_needed, have], 4.5)
 		Sfx.play(self, "locked")
 		return
 	player.remove_item("bidon_combustible", bidons_needed)
@@ -72,7 +72,7 @@ func interact(player: PlayerCharacter) -> void:
 	Sfx.play(self, "power_on", 0.0)
 	Sfx.play(self, "alarm", -6.0)
 	NoiseManager.emit_noise(global_position, 1.8)
-	toast("¡Incinerador encendido! Aguanta %d segundos: el ruido atrae a las dos criaturas. Cuando prenda, el fuego se propaga: ¡tendrás que salir por el túnel del noreste!" % int(charge_time), 6.0)
+	toast(Lang.t("¡Incinerador encendido! Aguanta %d segundos: el ruido atrae a las dos criaturas. Cuando prenda, el fuego se propaga: ¡tendrás que salir por el túnel del noreste!") % int(charge_time), 6.0)
 
 
 func _process(delta: float) -> void:
@@ -90,7 +90,7 @@ func _process(delta: float) -> void:
 	var secs := ceili(left)
 	if secs != last_count and secs >= 0 and secs % 5 == 0:
 		last_count = secs
-		toast("Incinerador: %d s…" % secs, 2.0)
+		toast(Lang.t("Incinerador: %d s…") % secs, 2.0)
 	if left <= 0.0:
 		charging = false
 		var mm := mission()

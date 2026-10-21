@@ -37,4 +37,4 @@ func get_value(key: String):
 
 
 func level_name() -> String:
-	return NAMES[level]
+	return Lang.t(NAMES[level])

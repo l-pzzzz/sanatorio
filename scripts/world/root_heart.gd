@@ -118,8 +118,8 @@ func get_prompt(player: PlayerCharacter) -> String:
 	if is_dead or busy:
 		return ""
 	if player.has_item("hacha"):
-		return "[E] Golpear el corazón con el hacha"
-	return "El corazón de la raíz late... necesitas un hacha"
+		return Lang.t("[E] Golpear el corazón con el hacha")
+	return Lang.t("El corazón de la raíz late... necesitas un hacha")
 
 
 func interact(player: PlayerCharacter) -> void:
@@ -127,7 +127,7 @@ func interact(player: PlayerCharacter) -> void:
 		return
 	if not player.has_item("hacha"):
 		Sfx.play(self, "locked")
-		toast("Con las manos no vas a lograr nada. Necesitas el hacha.", 3.0)
+		toast(Lang.t("Con las manos no vas a lograr nada. Necesitas el hacha."), 3.0)
 		return
 	busy = true
 	# TEMPORAL: cuando exista el cuerpo del jugador aquí vuelve: await player.swing_axe_wait()
@@ -157,7 +157,7 @@ func _hit() -> void:
 	else:
 		var left := int(ceilf(health / hit_damage))
 		if left == int(ceilf(0.5 * max_health / hit_damage)):
-			toast("El suelo vibra... la raíz se retuerce. Sigue golpeando.", 3.0)
+			toast(Lang.t("El suelo vibra... la raíz se retuerce. Sigue golpeando."), 3.0)
 
 
 func _target_scale() -> Vector3:
@@ -292,7 +292,7 @@ func _build_bar() -> void:
 	bar_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	frame.add_child(bar_fill)
 	bar_label = Label.new()
-	bar_label.text = "CORAZÓN"
+	bar_label.text = Lang.t("CORAZÓN")
 	bar_label.add_theme_font_size_override("font_size", 20)
 	bar_label.add_theme_color_override("font_outline_color", Color.BLACK)
 	bar_label.add_theme_constant_override("outline_size", 6)

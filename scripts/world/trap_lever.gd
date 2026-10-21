@@ -39,22 +39,22 @@ func _left() -> float:
 
 func get_prompt(_player: PlayerCharacter) -> String:
 	if _left() > 0.0:
-		return "Palanca de trampa (se recarga: %d s)" % ceili(_left())
-	return "[E] Accionar palanca (activa una trampa cercana)"
+		return Lang.t("Palanca de trampa (se recarga: %d s)") % ceili(_left())
+	return Lang.t("[E] Accionar palanca (activa una trampa cercana)")
 
 
 func interact(_player: PlayerCharacter) -> void:
 	if _left() > 0.0:
-		toast("La palanca todavía se está recargando.", 2.0)
+		toast(Lang.t("La palanca todavía se está recargando."), 2.0)
 		return
 	if zone == null:
-		toast("La palanca no responde (no tiene trampa conectada).", 2.5)
+		toast(Lang.t("La palanca no responde (no tiene trampa conectada)."), 2.5)
 		return
 	ready_at = Time.get_ticks_msec() / 1000.0 + cooldown
 	Sfx.play(self, "lever_clunk")
 	NoiseManager.emit_noise(global_position, 0.35)
 	zone.call("arm", active_time, stun_time)
-	toast("¡Trampa activada! Cualquier criatura que pise la zona de franjas quedará aturdida.", 4.0)
+	toast(Lang.t("¡Trampa activada! Cualquier criatura que pise la zona de franjas quedará aturdida."), 4.0)
 	var tween := create_tween()
 	tween.tween_property(arm_pivot, "rotation:x", deg_to_rad(35.0), 0.25)
 	light_material.albedo_color = Color(1.0, 0.1, 0.05)

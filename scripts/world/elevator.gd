@@ -121,15 +121,15 @@ func use_panel(player: PlayerCharacter, call_floor: int) -> void:
 			powered = true
 			Sfx.play(self, "elevator_ding")
 			if mm:
-				mm.show_toast("Fusible instalado. El ascensor tiene energía otra vez.", 3.5)
+				mm.show_toast(Lang.t("Fusible instalado. El ascensor tiene energía otra vez."), 3.5)
 				mm.report("elevator", "powered")
 		elif mm:
-			mm.show_toast("Sin energía. Falta el fusible del ascensor (búscalo por el edificio).", 4.0)
+			mm.show_toast(Lang.t("Sin energía. Falta el fusible del ascensor (búscalo por el edificio)."), 4.0)
 		return
 	var target := call_floor if call_floor >= 0 else (0 if at_upper else 1)
 	if (target == 1) == at_upper:
 		if mm:
-			mm.show_toast("El ascensor ya está aquí.", 1.8)
+			mm.show_toast(Lang.t("El ascensor ya está aquí."), 1.8)
 		return
 	_travel(target)
 
