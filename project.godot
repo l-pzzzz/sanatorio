@@ -25,6 +25,8 @@ Lang="*res://scripts/systems/lang.gd"
 Difficulty="*uid://b2rh3vcmlviy1"
 NoiseManager="*uid://5fmjjcsbdjna"
 DisplayManager="*uid://cvv5u1gonlep1"
+SaveSystem="*res://scripts/systems/save_system.gd"
+PauseMenu="*res://scripts/systems/pause_menu.gd"
 
 [display]
 

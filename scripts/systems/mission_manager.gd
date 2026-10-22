@@ -95,7 +95,11 @@ func _ready() -> void:
 		player.inventory_changed.connect(_refresh)
 		player.flashlight_toggled.connect(func(_on: bool) -> void: _refresh())
 	_refresh()
-	_play_intro()
+	if SaveSystem.has_pending():
+		overlay.color = Color(0, 0, 0, 1)   # pantalla negra mientras se restaura la partida
+		SaveSystem.apply_pending(self)
+	else:
+		_play_intro()
 	if profile == "raiz" and Difficulty.level >= 1:
 		_ally_creatures.call_deferred()
 
@@ -195,6 +199,12 @@ func _on_power_restored() -> void:
 		show_toast(Lang.t("¡Energía restaurada! La alarma las atrae. Ahora decide: ESCAPAR por el conducto del sur, o conseguir 2 bidones y quemarlo todo en el incinerador de la raíz."), 9.0)
 	else:
 		show_toast(Lang.t("¡Energía restaurada! Sonó la alarma y la criatura corre hacia allá. ¡Baja y corre a la salida!"), 7.0)
+	_start_alarm()
+
+
+func _start_alarm() -> void:
+	if alarm_timer:
+		return
 	alarm_timer = Timer.new()
 	alarm_timer.wait_time = alarm_interval
 	alarm_timer.timeout.connect(_alarm_pulse)
@@ -520,3 +530,72 @@ func _play_intro() -> void:
 	tween.tween_property(title_label, "modulate:a", 0.0, 1.0)
 	tween.parallel().tween_property(overlay, "color:a", 0.0, 1.4)
 	tween.tween_callback(show_toast.bind(Lang.t(intro_text if intro_text != "" else INTRO_TEXT), 9.0))
+
+
+# ------------------------------------------------------------ guardar / cargar
+
+## Título del nivel (en español; se traduce al mostrarlo con Lang.t).
+func level_title() -> String:
+	return intro_title if intro_title != "" else INTRO_TITLE
+
+
+## Estado de las misiones para el archivo de guardado (lo usa SaveSystem).
+func export_state() -> Dictionary:
+	return {
+		"power_on": power_on,
+		"fuses_collected": fuses_collected,
+		"doors_opened": doors_opened.keys(),
+		"items_taken": items_taken.keys(),
+		"elevator_ready": elevator_ready,
+		"reached_upper": reached_upper,
+		"stunned_once": stunned_once,
+		"levers_used": levers_used,
+		"heart_destroyed": heart_destroyed,
+		"burning": burning,
+		"bidons_ok": bidons_ok,
+		"burn_left": burn_left,
+		"play_time": play_time,
+		"pulse_left": pulse_left,
+		"show_missions": show_missions,
+	}
+
+
+## Restaura el estado guardado sin repetir avisos ni la intro.
+func import_state(d: Dictionary) -> void:
+	power_on = bool(d.get("power_on", false))
+	fuses_collected = int(d.get("fuses_collected", 0))
+	doors_opened.clear()
+	for id in d.get("doors_opened", []):
+		doors_opened[str(id)] = true
+	items_taken.clear()
+	for id in d.get("items_taken", []):
+		items_taken[str(id)] = true
+	elevator_ready = bool(d.get("elevator_ready", false))
+	reached_upper = bool(d.get("reached_upper", false))
+	stunned_once = bool(d.get("stunned_once", false))
+	levers_used = int(d.get("levers_used", 0))
+	heart_destroyed = bool(d.get("heart_destroyed", false))
+	bidons_ok = bool(d.get("bidons_ok", false))
+	play_time = float(d.get("play_time", 0.0))
+	pulse_left = float(d.get("pulse_left", pulse_left))
+	show_missions = bool(d.get("show_missions", true))
+	if power_on:
+		get_tree().call_group("lamps", "set_alarm", true)
+		get_tree().call_group("siren", "activate")
+		get_tree().call_group("doors", "refresh_lock_state")
+		_start_alarm()
+	if bool(d.get("burning", false)):
+		_on_burn_start()
+		burn_left = float(d.get("burn_left", burn_left))
+	_refresh()
+
+
+## Quita la pantalla negra tras cargar y avisa al jugador.
+func finish_load() -> void:
+	title_label.text = Lang.t(level_title())
+	title_label.modulate.a = 1.0
+	var tween := create_tween()
+	tween.tween_interval(0.6)
+	tween.tween_property(title_label, "modulate:a", 0.0, 0.8)
+	tween.parallel().tween_property(overlay, "color:a", 0.0, 1.0)
+	show_toast(Lang.t("Partida cargada."), 2.5)
