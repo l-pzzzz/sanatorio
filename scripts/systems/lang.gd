@@ -257,4 +257,37 @@ const EN := {
 		"Pump room sheet:\nThe panel is at the back. When you turn it on, the filter alarm (north) will sound and the specimen will go there. Take the elevator down and run to the hatch.",
 	"Etiqueta de la cámara fría:\nLa llave de la sala de bombas está aquí dentro. Y la palanca del salón este electrifica el suelo marcado con franjas: si el espécimen lo pisa, queda paralizado un buen rato.":
 		"Cold room label:\nThe pump room key is in here. And the lever in the east hall electrifies the floor marked with stripes: if the specimen steps on it, it is paralyzed for quite a while.",
+	# ------------------------------------------------------------ menú de pausa
+	"PAUSA": "PAUSED",
+	"REANUDAR": "RESUME",
+	"REINICIAR": "RESTART",
+	"CARGAR": "LOAD",
+	"GUARDAR": "SAVE",
+	"SALIR DEL JUEGO": "QUIT GAME",
+	"VOLVER": "BACK",
+	"SÍ": "YES",
+	"NO": "NO",
+	"GUARDAR PARTIDA": "SAVE GAME",
+	"CARGAR PARTIDA": "LOAD GAME",
+	"RANURA %d": "SLOT %d",
+	"— vacía —": "— empty —",
+	"FLECHAS / RATÓN  elegir      ENTER  aceptar      ESC  volver": "ARROWS / MOUSE  select      ENTER  accept      ESC  back",
+	"FLECHAS / RATÓN  elegir      ENTER  aceptar      ESC  reanudar": "ARROWS / MOUSE  select      ENTER  accept      ESC  resume",
+	"¿Reiniciar el nivel desde el principio?\nPerderás el progreso que no hayas guardado.":
+		"Restart the level from the beginning?\nAny unsaved progress will be lost.",
+	"¿Salir del juego?\nPerderás el progreso que no hayas guardado.":
+		"Quit the game?\nAny unsaved progress will be lost.",
+	"¿Sobrescribir la ranura %d?": "Overwrite slot %d?",
+	"¿Cargar la ranura %d?\nPerderás el progreso que no hayas guardado.":
+		"Load slot %d?\nAny unsaved progress will be lost.",
+	"Partida guardada en la ranura %d.": "Game saved to slot %d.",
+	"No se pudo guardar la partida.": "The game could not be saved.",
+	"No se pudo cargar: la ranura está vacía o dañada.": "Could not load: the slot is empty or damaged.",
+	"No hay partidas guardadas.": "There are no saved games.",
+	"Partida cargada.": "Game loaded.",
+	"No hay ninguna partida en curso.": "There is no game in progress.",
+	"La partida ya terminó.": "The game is already over.",
+	"No puedes guardar dentro de un escondite.": "You can't save while hiding.",
+	"Espera a que el ascensor se detenga.": "Wait for the elevator to stop.",
+	"¡Algo te persigue! No puedes guardar ahora.": "Something is chasing you! You can't save now.",
 }
