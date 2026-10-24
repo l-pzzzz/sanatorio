@@ -21,10 +21,11 @@ const PROFILES := {
 	],
 	"raiz": [
 		{"kind": "flashlight", "text": "Recoge la linterna: la tubería quedó a oscuras"},
-		{"kind": "door", "arg": "llave_drenaje", "text": "Encuentra la llave del drenaje (oeste) y abre la cámara de filtros (noroeste)"},
-		{"kind": "item", "arg": "hacha", "text": "Toma el hacha oxidada de la cámara de filtros"},
+		{"kind": "door", "arg": "llave_drenaje", "text": "Encuentra la llave del drenaje (oeste) y abre la sala de filtros (noroeste)"},
+		{"kind": "valves", "text": "Baja a la cámara inundada (filtros) y gira las 3 válvulas para vaciarla (%d/3)"},
+		{"kind": "item", "arg": "hacha", "text": "Baja por la rampa del fondo y toma el hacha oxidada"},
 		{"kind": "choose", "text": "RUTA FÁCIL: corta la barrera del túnel de raíces (noreste) con el hacha y escapa"},
-		{"kind": "heart", "text": "RUTA DIFÍCIL: corta las raíces del centro, baja por el túnel y destruye el CORAZÓN a hachazos"},
+		{"kind": "heart", "text": "RUTA DIFÍCIL: corta las raíces del centro, baja en el ascensor de madera y destruye el CORAZÓN a hachazos"},
 		{"kind": "bidons", "text": "...consigue 2 bidones de combustible (%d/2)"},
 		{"kind": "burn_lit", "text": "...enciende el incinerador y ¡sal por el túnel noreste antes de que el fuego te alcance!"},
 	],
@@ -70,6 +71,7 @@ var reached_upper := false
 var stunned_once := false
 var levers_used := 0
 var heart_destroyed := false
+var valves_done := {}            ## Nivel 3: válvulas de la cámara inundada ya giradas (id -> true)
 var burning := false
 var bidons_ok := false
 var burn_left := 0.0
@@ -155,7 +157,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_refresh()
 		get_viewport().set_input_as_handled()
 		return
-	if state != State.PLAYING and can_restart and event.is_action_pressed("ui_accept"):
+	if state != State.PLAYING and can_restart and (event.is_action_pressed("ui_accept") or (event is InputEventScreenTouch and event.pressed)):
 		if state == State.WON and next_level != "":
 			get_tree().change_scene_to_file(next_level)
 		else:
@@ -187,6 +189,8 @@ func report(event: String, id: String) -> void:
 			_on_heart_destroyed()
 		"burn_start":
 			_on_burn_start()
+		"valve":
+			valves_done[id] = true
 	_refresh()
 
 
@@ -327,10 +331,27 @@ func _burn_tick(delta: float) -> void:
 		on_player_caught("EL FUEGO TE ALCANZÓ")
 
 
+const EPILOGUE_A := "Logré escapar.\n\nPero el murciélago y el Eco siguen ahí abajo, vivos, escuchando en la oscuridad. La raíz sigue latiendo.\n\nY no dejo de pensar en el próximo que baje por esa tubería...\nSiento compasión por el último hombre que entre en ese lugar."
+const EPILOGUE_B := "La raíz ardió. Ya no late.\n\nPero el silencio de ahí abajo pesa más que cualquier grito. No sé si las criaturas murieron o solo se durmieron entre las cenizas.\n\nSalí, pero una parte de mí se quedó en ese fuego.\nQue nadie vuelva a bajar."
+
+
+func _epilogue_for(burned: bool) -> String:
+	if profile != "raiz":
+		return ""
+	return Lang.t(EPILOGUE_B if burned else EPILOGUE_A)
+
+
 func _on_burn() -> void:
-	if state != State.PLAYING or burn_scene == "":
+	if state != State.PLAYING:
 		return
 	state = State.WON
+	if burn_scene == "":
+		# Sin cinemática de final: pantalla de fin (final B, la raíz arde).
+		_freeze_world()
+		Sfx.play(self, "explosion", -2.0)
+		_end_screen(Lang.t("FINAL B: LA RAÍZ ARDIÓ\nTiempo: %02d:%02d") % [floori(play_time / 60.0), int(play_time) % 60],
+			Color(0.35, 0.1, 0.0), Lang.t("Enter para volver a empezar"), _epilogue_for(true))
+		return
 	_freeze_world(false)
 	var tw := create_tween()
 	tw.tween_property(overlay, "color", Color(1.0, 0.5, 0.1, 1.0), 0.5)
@@ -358,8 +379,10 @@ func _on_escape() -> void:
 	_freeze_world()
 	var minutes := floori(play_time / 60.0)
 	var seconds := int(play_time) % 60
-	_end_screen(Lang.t("¡ESCAPASTE!\nTiempo: %02d:%02d") % [minutes, seconds], Color(0.0, 0.0, 0.0),
-		Lang.t("Enter para continuar") if next_level != "" else Lang.t("Enter para volver a empezar"))
+	var escaped_title := "¡ESCAPASTE DEL FUEGO!\nTiempo: %02d:%02d" if burning else "¡ESCAPASTE!\nTiempo: %02d:%02d"
+	_end_screen(Lang.t(escaped_title) % [minutes, seconds], Color(0.0, 0.0, 0.0),
+		Lang.t("Enter para continuar") if next_level != "" else Lang.t("Enter para volver a empezar"),
+		_epilogue_for(burning))
 
 
 func _freeze_world(show_mouse := true) -> void:
@@ -373,15 +396,32 @@ func _freeze_world(show_mouse := true) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
-func _end_screen(title: String, tint: Color, hint := "") -> void:
+func _end_screen(title: String, tint: Color, hint := "", epilogue := "") -> void:
 	if hint == "":
 		hint = Lang.t("Enter para volver a empezar")
-	title_label.text = title + "\n\n(" + hint + ")"
+	var head := title
+	if epilogue != "":
+		head += "\n\n" + epilogue
+		title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		title_label.offset_left = 140.0
+		title_label.offset_right = -140.0
+		title_label.add_theme_font_size_override("font_size", 28)
+	title_label.text = head + "\n\n(" + hint + ")"
 	title_label.modulate.a = 0.0
 	overlay.color = Color(tint.r, tint.g, tint.b, 0.0)
 	var tween := create_tween()
-	tween.tween_property(overlay, "color:a", 0.88, 1.0)
+	tween.tween_property(overlay, "color:a", 0.88 if epilogue == "" else 0.96, 1.0)
 	tween.tween_property(title_label, "modulate:a", 1.0, 0.6)
+	if epilogue != "":
+		# el epílogo se escribe letra por letra
+		var shown := title.length() + 2
+		title_label.visible_characters = shown
+		var total := title_label.text.length()
+		var type_s := float(epilogue.length()) * 0.045
+		tween.tween_interval(1.2)
+		tween.tween_property(title_label, "visible_characters", total, type_s)
+		tween.tween_callback(func() -> void: title_label.visible_characters = -1)
+		tween.tween_interval(1.0)
 	tween.tween_callback(func() -> void: can_restart = true)
 
 
@@ -423,6 +463,8 @@ func _is_done(step: Dictionary) -> bool:
 			return state == State.WON and not burning
 		"heart":
 			return heart_destroyed
+		"valves":
+			return valves_done.size() >= 3
 		"bidons":
 			if player != null and player.count_item("bidon_combustible") >= 2:
 				bidons_ok = true
@@ -435,6 +477,8 @@ func _is_done(step: Dictionary) -> bool:
 func _step_text(step: Dictionary) -> String:
 	if str(step["kind"]) == "fuses":
 		return Lang.t("Reúne los %d fusibles (%d/%d)") % [fuses_required, mini(fuses_collected, fuses_required), fuses_required]
+	if str(step["kind"]) == "valves":
+		return Lang.t(str(step["text"])) % mini(valves_done.size(), 3)
 	if "%d" in str(step["text"]) and player != null:
 		return Lang.t(str(step["text"])) % mini(player.count_item("bidon_combustible"), 2)
 	return Lang.t(str(step["text"]))
@@ -551,6 +595,7 @@ func export_state() -> Dictionary:
 		"stunned_once": stunned_once,
 		"levers_used": levers_used,
 		"heart_destroyed": heart_destroyed,
+		"valves_done": valves_done.keys(),
 		"burning": burning,
 		"bidons_ok": bidons_ok,
 		"burn_left": burn_left,
@@ -576,6 +621,11 @@ func import_state(d: Dictionary) -> void:
 	levers_used = int(d.get("levers_used", 0))
 	heart_destroyed = bool(d.get("heart_destroyed", false))
 	bidons_ok = bool(d.get("bidons_ok", false))
+	valves_done.clear()
+	for id in d.get("valves_done", []):
+		valves_done[str(id)] = true
+	if not valves_done.is_empty():
+		get_tree().call_group("flooded_chamber", "restore_valves", valves_done.keys())
 	play_time = float(d.get("play_time", 0.0))
 	pulse_left = float(d.get("pulse_left", pulse_left))
 	show_missions = bool(d.get("show_missions", true))

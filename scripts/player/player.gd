@@ -67,6 +67,8 @@ func _ready() -> void:
 	_setup_interaction()
 	floor_snap_length = 0.6       # para no "saltar" bajando las escaleras
 	add_child(PlayerTools.new())
+	if get_tree().get_first_node_in_group("touch_controls") == null:      # se muestra solo en pantallas táctiles (o con F10)
+		get_parent().add_child.call_deferred(TouchControls.new())
 	if use_body:
 		body = PlayerBody.new()
 		add_child(body)
@@ -79,7 +81,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_try_interact()
 	elif event.is_action_pressed("flashlight"):
 		toggle_flashlight()
-	elif event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+	elif event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and event.device != InputEvent.DEVICE_ID_EMULATION:
 		if is_hidden:
 			var wanted_yaw: float = rotation.y - event.relative.x * mouse_sensitivity
 			rotation.y = hide_yaw + clampf(angle_difference(hide_yaw, wanted_yaw), -deg_to_rad(hide_look_yaw), deg_to_rad(hide_look_yaw))

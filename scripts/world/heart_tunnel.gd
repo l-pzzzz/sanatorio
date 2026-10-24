@@ -18,6 +18,7 @@ const FLESH := "res://assets/textures/rooms/wall_organic.png"
 @export var cavern_size := Vector2(18.0, 18.0)
 @export var cavern_height := 5.6
 @export var open_length := 8.4            ## Tramo inicial sin techo propio (hueco del suelo)
+@export var use_lift := true              ## true = pozo con ascensor de madera; false = rampa de antes
 
 var heart: Node3D
 var _run := 0.0
@@ -33,6 +34,13 @@ func _ready() -> void:
 	var dirt := _mat(DIRT, Color(0.9, 0.8, 0.75), 0.5)
 	var rock := _mat(WALL, Color(0.9, 0.82, 0.78), 0.3333)
 	var flesh := _mat(FLESH, Color(0.9, 0.6, 0.6), 0.3333)
+
+	if use_lift:
+		_run = 2.0 * cell_size                 # el pozo ocupa la 1.ª celda; el túnel de abajo, la 2.ª
+		_build_lift_shaft(dirt, rock)
+		_build_barrier()
+		_build_cavern(dirt, rock, flesh)
+		return
 
 	# Rampa: la cara de arriba pasa por (0, floor_y) y baja `depth` metros.
 	var ramp := StaticBody3D.new()
@@ -94,6 +102,65 @@ func _ready() -> void:
 
 	_build_cavern(dirt, rock, flesh)
 	_add_tunnel_roots(th)
+
+
+## Pozo vertical con ascensor de madera. La 2.ª celda del hueco queda tapada con una tapa de tablas.
+func _build_lift_shaft(dirt: Material, rock: Material) -> void:
+	var half := cell_size / 2.0
+	var bottom := floor_y - depth
+	var tunnel_h := 3.4
+	var body := StaticBody3D.new()
+	body.name = "Pozo"
+	add_child(body)
+	var total := 2.0 * cell_size
+	# paredes laterales (pozo + túnel), del fondo al suelo del mapa
+	for side in [-1.0, 1.0]:
+		_box(body, Vector3(total + 0.4, depth + 0.4, 0.4), Vector3(total / 2.0, floor_y - depth / 2.0 - 0.2, side * (half + 0.2)), rock, true)
+	# pared oeste del pozo
+	_box(body, Vector3(0.4, depth + 0.4, cell_size + 0.8), Vector3(-0.2, floor_y - depth / 2.0 - 0.2, 0.0), rock, true)
+	# pared este del pozo, por encima de la boca del túnel
+	var up_h := depth - tunnel_h
+	_box(body, Vector3(0.4, up_h, cell_size + 0.8), Vector3(cell_size + 0.2, floor_y - up_h / 2.0, 0.0), rock, true)
+	# suelo del pozo y del túnel
+	_box(body, Vector3(total + 0.6, 0.5, cell_size + 0.8), Vector3(total / 2.0 - 0.1, bottom - 0.25, 0.0), dirt, true)
+	# techo del túnel (bajo la tapa)
+	_box(body, Vector3(cell_size, 0.4, cell_size + 0.8), Vector3(cell_size * 1.5, bottom + tunnel_h + 0.2, 0.0), rock, true)
+	# tapa de tablas sobre la 2.ª celda del hueco
+	var lid_mat := _mat("res://assets/textures/rooms/wood.png", Color(0.55, 0.42, 0.32), 0.6)
+	_box(body, Vector3(cell_size, 0.4, cell_size), Vector3(cell_size * 1.5, floor_y - 0.2, 0.0), lid_mat, true)
+	# luces: arriba (cálida) y abajo (rojiza)
+	var top := OmniLight3D.new()
+	top.position = Vector3(cell_size / 2.0, floor_y + 2.2, 0.0)
+	top.light_color = Color(1.0, 0.6, 0.3)
+	top.light_energy = 0.8
+	top.omni_range = 6.0
+	add_child(top)
+	for i in 2:
+		var l := OmniLight3D.new()
+		l.position = Vector3(cell_size * (0.5 + float(i) * 1.1), bottom + 2.4, 0.0)
+		l.light_color = Color(1.0, 0.25, 0.25)
+		l.light_energy = 0.7
+		l.omni_range = 6.0
+		add_child(l)
+	var lift := WoodLift.new()
+	lift.name = "AscensorMadera"
+	lift.depth = depth
+	lift.shaft_size = cell_size
+	add_child(lift)
+
+
+func _build_barrier() -> void:
+	var barrier := StaticBody3D.new()
+	barrier.name = "BarreraCriaturas"
+	barrier.collision_layer = 4
+	barrier.collision_mask = 0
+	barrier.position = Vector3(cell_size, floor_y + 1.5, 0.0)
+	var bs := CollisionShape3D.new()
+	var bshape := BoxShape3D.new()
+	bshape.size = Vector3(cell_size * 2.0 - 0.1, 3.0, cell_size - 0.1)
+	bs.shape = bshape
+	barrier.add_child(bs)
+	add_child(barrier)
 
 
 func _build_cavern(dirt: Material, rock: Material, flesh: Material) -> void:

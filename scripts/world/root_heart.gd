@@ -130,8 +130,7 @@ func interact(player: PlayerCharacter) -> void:
 		toast(Lang.t("Con las manos no vas a lograr nada. Necesitas el hacha."), 3.0)
 		return
 	busy = true
-	# TEMPORAL: cuando exista el cuerpo del jugador aquí vuelve: await player.swing_axe_wait()
-	await get_tree().create_timer(0.45).timeout
+	await player.swing_axe_wait()
 	if is_dead:
 		return
 	_hit()

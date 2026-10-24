@@ -1,0 +1,88 @@
+[gd_scene format=3 uid="uid://bj7i5gs6wk4i3"]
+
+[ext_resource type="PackedScene" uid="uid://drbja2juy0ilo" path="res://scenes/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/eco_creature.tscn" id="2_eco"]
+[ext_resource type="Script" uid="uid://diyfslhtvwpn0" path="res://scripts/world/level_builder.gd" id="3_builder"]
+[ext_resource type="Script" uid="uid://b5qxefigrcj6" path="res://scripts/enemies/maze_nav.gd" id="4_nav"]
+[ext_resource type="Script" uid="uid://djsbompm1sofu" path="res://scripts/systems/mission_manager.gd" id="5_mission"]
+[ext_resource type="Script" uid="uid://j50ir0kkeh0j" path="res://scripts/systems/debug_noise.gd" id="6_debug"]
+[ext_resource type="PackedScene" uid="uid://d3r04060idtc5" path="res://scenes/enemies/bat_creature.tscn" id="7_bat"]
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 1
+ambient_light_source = 2
+ambient_light_color = Color(0.25, 0.1, 0.12, 1)
+ambient_light_energy = 0.3
+fog_enabled = true
+fog_light_color = Color(0.09, 0.03, 0.04, 1)
+fog_density = 0.06
+
+[node name="Raiz" type="Node3D" unique_id=1708951720]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=452548062]
+environment = SubResource("Environment_main")
+
+[node name="LevelBuilder" type="Node3D" parent="." unique_id=309126163]
+script = ExtResource("3_builder")
+origin = Vector3(-30, 0, -26)
+sanatorium = true
+theme = "raiz"
+lamp_energy = 0.28
+decor = PackedStringArray()
+rooms = PackedStringArray("0,0,0,c_filtros", "0,1,0,c_filtros", "0,2,0,c_filtros", "0,3,0,c_filtros", "0,4,0,c_hall", "0,5,0,c_esporas", "0,6,0,c_esporas", "0,7,0,c_esporas", "0,8,0,c_esporas", "0,9,0,c_hall", "0,10,0,c_corazon", "0,11,0,c_corazon", "0,12,0,c_corazon", "0,13,0,c_corazon", "0,14,0,c_corazon", "0,0,1,c_filtros", "0,1,1,c_filtros", "0,2,1,c_filtros", "0,3,1,c_filtros", "0,4,1,c_hall", "0,5,1,c_esporas", "0,6,1,c_esporas", "0,7,1,c_esporas", "0,8,1,c_esporas", "0,9,1,c_hall", "0,10,1,c_hall", "0,11,1,c_hall", "0,12,1,c_hall", "0,13,1,c_hall", "0,14,1,c_hall", "0,0,2,c_hall", "0,1,2,c_hall", "0,2,2,c_hall", "0,3,2,c_hall", "0,4,2,c_hall", "0,5,2,c_hall", "0,6,2,c_hall", "0,7,2,c_hall", "0,8,2,c_hall", "0,9,2,c_hall", "0,10,2,c_hall", "0,11,2,c_hall", "0,12,2,c_hall", "0,13,2,c_hall", "0,14,2,c_hall", "0,0,3,c_agua", "0,1,3,c_agua", "0,2,3,c_agua", "0,3,3,c_hall", "0,4,3,c_hall", "0,5,3,c_hall", "0,6,3,c_hall", "0,7,3,c_hall", "0,8,3,c_hall", "0,9,3,c_hall", "0,10,3,c_hall", "0,11,3,c_osario", "0,12,3,c_osario", "0,13,3,c_osario", "0,14,3,c_osario", "0,0,4,c_agua", "0,1,4,c_agua", "0,2,4,c_agua", "0,3,4,c_hall", "0,4,4,c_corazon", "0,5,4,c_corazon", "0,6,4,c_corazon", "0,7,4,c_corazon", "0,8,4,c_corazon", "0,9,4,c_hall", "0,10,4,c_hall", "0,11,4,c_osario", "0,12,4,c_osario", "0,13,4,c_osario", "0,14,4,c_osario", "0,0,5,c_agua", "0,1,5,c_agua", "0,2,5,c_agua", "0,3,5,c_hall", "0,4,5,c_corazon", "0,5,5,c_corazon", "0,6,5,c_corazon", "0,7,5,c_corazon", "0,8,5,c_corazon", "0,9,5,c_hall", "0,10,5,c_hall", "0,11,5,c_osario", "0,12,5,c_osario", "0,13,5,c_osario", "0,14,5,c_osario", "0,0,6,c_agua", "0,1,6,c_agua", "0,2,6,c_agua", "0,3,6,c_hall", "0,4,6,c_corazon", "0,5,6,c_corazon", "0,6,6,c_corazon", "0,7,6,c_corazon", "0,8,6,c_corazon", "0,9,6,c_hall", "0,10,6,c_hall", "0,11,6,c_hall", "0,12,6,c_hall", "0,13,6,c_hall", "0,14,6,c_hall", "0,0,7,c_agua", "0,1,7,c_agua", "0,2,7,c_agua", "0,3,7,c_hall", "0,4,7,c_corazon", "0,5,7,c_corazon", "0,6,7,c_corazon", "0,7,7,c_corazon", "0,8,7,c_corazon", "0,9,7,c_hall", "0,10,7,c_hall", "0,11,7,c_agua", "0,12,7,c_agua", "0,13,7,c_agua", "0,14,7,c_agua", "0,0,8,c_almacen", "0,1,8,c_almacen", "0,2,8,c_almacen", "0,3,8,c_hall", "0,4,8,c_corazon", "0,5,8,c_corazon", "0,6,8,c_corazon", "0,7,8,c_corazon", "0,8,8,c_corazon", "0,9,8,c_hall", "0,10,8,c_hall", "0,11,8,c_agua", "0,12,8,c_agua", "0,13,8,c_agua", "0,14,8,c_agua", "0,0,9,c_almacen", "0,1,9,c_almacen", "0,2,9,c_almacen", "0,3,9,c_hall", "0,4,9,c_hall", "0,5,9,c_hall", "0,6,9,c_hall", "0,7,9,c_hall", "0,8,9,c_hall", "0,9,9,c_hall", "0,10,9,c_hall", "0,11,9,c_agua", "0,12,9,c_agua", "0,13,9,c_agua", "0,14,9,c_agua", "0,0,10,c_hall", "0,1,10,c_hall", "0,2,10,c_hall", "0,3,10,c_hall", "0,4,10,c_nido", "0,5,10,c_nido", "0,6,10,c_nido", "0,7,10,c_nido", "0,8,10,c_nido", "0,9,10,c_hall", "0,10,10,c_nido", "0,11,10,c_nido", "0,12,10,c_nido", "0,13,10,c_nido", "0,14,10,c_nido", "0,0,11,c_hall", "0,1,11,c_hall", "0,2,11,c_hall", "0,3,11,c_hall", "0,4,11,c_nido", "0,5,11,c_nido", "0,6,11,c_nido", "0,7,11,c_nido", "0,8,11,c_nido", "0,9,11,c_hall", "0,10,11,c_nido", "0,11,11,c_nido", "0,12,11,c_nido", "0,13,11,c_nido", "0,14,11,c_nido", "0,0,12,c_hall", "0,1,12,c_hall", "0,2,12,c_hall", "0,3,12,c_hall", "0,4,12,c_nido", "0,5,12,c_nido", "0,6,12,c_nido", "0,7,12,c_nido", "0,8,12,c_nido", "0,9,12,c_hall", "0,10,12,c_nido", "0,11,12,c_nido", "0,12,12,c_nido", "0,13,12,c_nido", "0,14,12,c_nido")
+notes = Array[String](["Nota del técnico de mantenimiento:
+La cámara de filtros está inundada desde la tormenta. Las 3 válvulas de drenaje están sobre las pasarelas de la cámara: una al norte, una al este y otra al sureste. Al girarlas el agua baja. No te caigas: algo grande vive ahí abajo y no perdona.", "Parte del Dr. Vega, 14 de marzo:
+El paciente 31 está fundido con el moho de los drenajes. Ya no tiene ojos ni oídos propios: ve por uno y escucha por otro. Cada vez que la raíz late, ELLOS saben dónde estás.", "Cuaderno del Dr. Vega:
+Todo nace en el CORAZÓN, una masa de raíces que late bajo la cámara del centro. Un ascensor de madera baja hasta él, tapado por raíces gruesas (necesitas el hacha). Mientras viva, el fuego no prende y vivirán ellos. Destrúyelo a hachazos; luego el incinerador de arriba funcionará con dos bidones: uno en las esporas y otro en las raíces del sur. Cuando todo arda, la única salida es el túnel del noreste: corre.", "Orden de mantenimiento:
+El ascensor de madera del centro se maneja con la manivela de la plataforma. Chirría muchísimo y el ruido se oye en todo el edificio. Antes de bajar, asegúrate de que nada te siga.", "Etiqueta del almacén:
+La llave del drenaje está en la zona inundada del oeste. Las raíces no se cortan con las manos: el hacha de mantenimiento cayó al fondo de la cámara inundada, bajo la sala de filtros (arriba a la izquierda). Dicen que hay algo vivo en el agua.", "Inscripción en la pared:
+Hay un túnel de raíces al noreste. Dicen que sube hasta la superficie. Nadie volvió para confirmarlo. El hacha corta las raíces: úsala en la barrera.", "Marca en la tubería:
+SANTA MARTA - DRENAJE PROFUNDO. NO PASAR. Alguien escribió debajo, con las uñas: \"No hay salida por donde viniste.\""])
+layout = "+#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+
+#q n 4  # #  h   K# 2         X
++ + + + + + + + + + +#+#+#+#+#+
+#    r  # #h   n  #           #
++#+1+#+#+ +#+ +#+#+ + + + + + +
+#B                           B#
++#+#+#+ + + + + + + + +#+#+#+#+
+#    j#               #r      #
++ + + + +#+#+#+#+#+ + + + + + +
+#a      #         #        k n#
++ + + + + + + + + + + + + + + +
+#  w  # #  h      #B  #       #
++ + + + + + + + + + + +#+#+#+#+
+#  w  # #    I    #  p        #
++ + + + + + + + + + + +#+#+#+#+
+#d    # #n V   h  #   #      d#
++#+#+#+ + + + + + + + + + + + +
+#  j    #h        #      z    #
++ + + + +#+#+2+#+#+ + + + + + +
+#n   k#               #w   w  #
++#+#+#+ +#+#+ +#+#+ +#+#+#+#+#+
+#     # #h        # #  k      #
++ + + + + + + + + + + + + + + +
+#  L    #  w      #      n    #
++ + + + + + + + + + + + + + + +
+#n    #B#    d   K# #      j  #
++#+#+#+#+#+#+#+#+#+#+#+#+#+#+#+"
+
+[node name="MazeNav" type="Node" parent="." unique_id=124613791 groups=["maze_nav"]]
+script = ExtResource("4_nav")
+
+[node name="Player" parent="." unique_id=1190377679 instance=ExtResource("1_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24, 0.05, 20)
+
+[node name="EcoCreature" parent="." unique_id=812019089 instance=ExtResource("2_eco")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.05, -8)
+
+[node name="BatCreature" parent="." unique_id=19069101 instance=ExtResource("7_bat")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.05, -20)
+
+[node name="MissionManager" type="Node" parent="." unique_id=1293419208]
+script = ExtResource("5_mission")
+intro_title = "NIVEL 3: LA RAÍZ"
+intro_text = "Dos criaturas, un mismo cuerpo: el murciélago VE y el Eco OYE, y se avisan. La RAÍZ late y delata tu posición. Para conseguir el hacha tendrás que bajar a la cámara inundada, girar 3 válvulas y no caer al agua. RUTA FÁCIL: corta la barrera del túnel noreste y escapa. RUTA DIFÍCIL: baja al corazón de la raíz, destrúyelo a hachazos, quema todo con 2 bidones y sal antes de que el fuego te alcance."
+profile = "raiz"
+
+[node name="DebugNoise" type="Node" parent="." unique_id=1787580945]
+script = ExtResource("6_debug")

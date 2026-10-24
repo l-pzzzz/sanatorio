@@ -75,10 +75,11 @@ const EN := {
 	"Instala los fusibles en el generador": "Install the fuses in the generator",
 	"¡Baja en el ascensor y corre a la puerta principal!": "Take the elevator down and run to the main door!",
 	"Recoge la linterna: la tubería quedó a oscuras": "Pick up the flashlight: the pipe is pitch dark",
-	"Encuentra la llave del drenaje (oeste) y abre la cámara de filtros (noroeste)": "Find the drain key (west) and open the filter chamber (northwest)",
-	"Toma el hacha oxidada de la cámara de filtros": "Take the rusty axe from the filter chamber",
+	"Encuentra la llave del drenaje (oeste) y abre la sala de filtros (noroeste)": "Find the drain key (west) and open the filter room (northwest)",
+	"Baja a la cámara inundada (filtros) y gira las 3 válvulas para vaciarla (%d/3)": "Go down to the flooded chamber (filters) and turn the 3 valves to drain it (%d/3)",
+	"Baja por la rampa del fondo y toma el hacha oxidada": "Take the ramp to the bottom and grab the rusty axe",
 	"RUTA FÁCIL: corta la barrera del túnel de raíces (noreste) con el hacha y escapa": "EASY ROUTE: cut the root tunnel barrier (northeast) with the axe and escape",
-	"RUTA DIFÍCIL: corta las raíces del centro, baja por el túnel y destruye el CORAZÓN a hachazos": "HARD ROUTE: cut the roots in the center, go down the tunnel and destroy the HEART with the axe",
+	"RUTA DIFÍCIL: corta las raíces del centro, baja en el ascensor de madera y destruye el CORAZÓN a hachazos": "HARD ROUTE: cut the roots in the center, take the wooden lift down and destroy the HEART with the axe",
 	"...consigue 2 bidones de combustible (%d/2)": "...get 2 fuel canisters (%d/2)",
 	"...enciende el incinerador y ¡sal por el túnel noreste antes de que el fuego te alcance!": "...light the incinerator and get out through the northeast tunnel before the fire catches you!",
 	"Recoge la linterna que se te cayó en la escalera": "Pick up the flashlight you dropped on the stairs",
@@ -290,4 +291,20 @@ const EN := {
 	"No puedes guardar dentro de un escondite.": "You can't save while hiding.",
 	"Espera a que el ascensor se detenga.": "Wait for the elevator to stop.",
 	"¡Algo te persigue! No puedes guardar ahora.": "Something is chasing you! You can't save now.",
+
+	# ------------------------------------------------------ finales sin cinemática
+	"FINAL B: LA RAÍZ ARDIÓ\nTiempo: %02d:%02d": "ENDING B: THE ROOT BURNED\nTime: %02d:%02d",
+	"Logré escapar.\n\nPero el murciélago y el Eco siguen ahí abajo, vivos, escuchando en la oscuridad. La raíz sigue latiendo.\n\nY no dejo de pensar en el próximo que baje por esa tubería...\nSiento compasión por el último hombre que entre en ese lugar.": "I made it out.\n\nBut the bat and the Echo are still down there, alive, listening in the dark. The root still beats.\n\nAnd I can't stop thinking about the next one who goes down that pipe...\nI feel pity for the last man who ever enters that place.",
+	"La raíz ardió. Ya no late.\n\nPero el silencio de ahí abajo pesa más que cualquier grito. No sé si las criaturas murieron o solo se durmieron entre las cenizas.\n\nSalí, pero una parte de mí se quedó en ese fuego.\nQue nadie vuelva a bajar.": "The root burned. It no longer beats.\n\nBut the silence down there weighs more than any scream. I don't know if the creatures died or just fell asleep among the ashes.\n\nI got out, but a part of me stayed in that fire.\nMay no one ever go down again.",
+	"¡ESCAPASTE DEL FUEGO!\nTiempo: %02d:%02d": "YOU ESCAPED THE FIRE!\nTime: %02d:%02d",
+	# ------------------------------------------------------ cámara inundada y Leviatán
+	"[E] Girar la válvula (%d/3)": "[E] Turn the valve (%d/3)",
+	"¡Algo enorme se agita bajo el agua!": "Something huge stirs beneath the water!",
+	"El agua baja... pero el Leviatán sigue ahí. Faltan %d válvulas.": "The water is dropping... but the Leviathan is still there. %d valves left.",
+	"¡El Leviatán se desploma! Cuando el agua baje del todo, usa la rampa del fondo (este) y recoge el hacha.": "The Leviathan collapses! When the water is fully gone, take the ramp at the bottom (east) and grab the axe.",
+	"EL LEVIATÁN TE DEVORÓ": "THE LEVIATHAN DEVOURED YOU",
+	# ------------------------------------------------------ ascensor de madera
+	"[E] Girar la manivela: SUBIR": "[E] Turn the crank: GO UP",
+	"[E] Girar la manivela: BAJAR": "[E] Turn the crank: GO DOWN",
+	"El ascensor chirría y baja... todo lo que se acerca lo oye.": "The lift creaks as it descends... everything nearby can hear it.",
 }

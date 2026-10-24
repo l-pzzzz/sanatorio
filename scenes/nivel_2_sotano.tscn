@@ -47,7 +47,7 @@ position = Vector3(0, 0.05, 0)
 [node name="MissionManager" type="Node" parent="."]
 script = ExtResource("5_mission")
 profile = "sotano"
-next_level = ""
+next_level = "res://scenes/nivel_3_raiz.tscn"
 intro_title = "NIVEL 2: LOS SÓTANOS"
 intro_text = "La puerta principal no daba a la calle: bajaba a los sótanos. Algo sin ojos escucha cada paso. Si oyes un chasquido grave, quédate INMÓVIL. Los charcos delatan tus pasos; los casilleros y los tanques sirven de escondite. Esta vez hay dos pisos y herramientas para aturdirlo."
 
