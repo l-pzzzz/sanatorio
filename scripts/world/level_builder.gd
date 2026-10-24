@@ -110,6 +110,7 @@ const MODEL_PROPS := {
 }
 const PROPS_DIR := "res://assets/props/"
 const HEART_TUNNEL := preload("res://scripts/world/heart_tunnel.gd")
+const FLOODED_CHAMBER := preload("res://scripts/world/flooded_chamber.gd")
 const PROP_VIEW_DISTANCE := 20.0
 var _prop_cache := {}
 ## Objetos que valen igual en todos los temas: letra -> [id, cantidad].
@@ -361,7 +362,7 @@ func _scan_openings() -> void:
 				_openings.append(cell)
 
 
-## Marca 'V': boca del túnel que baja al corazón. Hueco de 2 celdas hacia el este.
+## Marca 'V' (túnel al corazón) o '4' (cámara inundada): boca en el suelo. Hueco de 2 celdas hacia el este.
 func _scan_pits() -> void:
 	if theme != "raiz":
 		return
@@ -369,7 +370,8 @@ func _scan_pits() -> void:
 	var rows := _layout_rows()
 	for cy in cells.y:
 		for cx in cells.x:
-			if _char_at(rows, cy * 2 + 1, cx * 2 + 1) == "V":
+			var pit_ch := _char_at(rows, cy * 2 + 1, cx * 2 + 1)
+			if pit_ch == "V" or pit_ch == "4":
 				_pits.append(Vector2i(cx, cy))
 				_pits.append(Vector2i(cx + 1, cy))
 
@@ -499,6 +501,16 @@ func _add_marker(ch: String, cell: Vector2i, rows: PackedStringArray, runtime: b
 	var center := _cell_center(cell)
 	if theme == "raiz" and (PROP_MARKERS.has(ch) or MODEL_PROPS.has(ch)):
 		return note_index        # en la raíz no hay camillas, barriles ni muebles de los otros niveles
+	if ch == "4":
+		if runtime and theme == "raiz":
+			var chamber := Node3D.new()
+			chamber.set_script(FLOODED_CHAMBER)
+			chamber.name = "FloodedChamber"
+			chamber.position = center + Vector3(-cell_size / 2.0, 0.0, 0.0)
+			chamber.set("ground_y", 0.0)
+			chamber.set("cell_size", cell_size)
+			add_child(chamber)
+		return note_index
 	if ch == "V":
 		if runtime and theme == "raiz":
 			var tunnel := Node3D.new()

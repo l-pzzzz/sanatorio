@@ -91,7 +91,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED or player.is_hidden or not player.is_physics_processing():
 		return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		_shoot()
+		if event.device != InputEvent.DEVICE_ID_EMULATION:      # los toques del celular no disparan solos
+			_shoot()
 	elif event is InputEventKey and event.pressed and not event.echo:
 		if event.physical_keycode == KEY_G:
 			_throw_bottle()
