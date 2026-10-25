@@ -5,6 +5,10 @@ extends RefCounted
 
 
 static func play(from: Node, sound: String, volume_db := -8.0) -> void:
+	if Net.replaying and sound == "locked":
+		return      # que no suene la cerradura en todas las PCs cuando un compañero no tiene la llave
+	if Net.should_relay_sfx(from):
+		Net.relay_sfx(sound, volume_db)    # sonidos de las criaturas del anfitrión: también a los demás
 	var path := "res://assets/audio/%s.wav" % sound
 	if not ResourceLoader.exists(path):
 		return

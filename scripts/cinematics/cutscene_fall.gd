@@ -40,8 +40,8 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if done:
-		return
+	if done or Net.is_client():
+		return      # en red solo el anfitrión puede saltar la cinemática
 	if event.is_action_pressed("ui_accept") or event.is_action_pressed("ui_cancel"):
 		_finish()
 
@@ -53,7 +53,7 @@ func _finish() -> void:
 	if NoiseManager.meter:
 		NoiseManager.meter.visible = true
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	get_tree().change_scene_to_file(next_scene)
+	Net.goto_scene(next_scene)      # en red: el anfitrión lleva a todos al siguiente nivel
 
 
 # ------------------------------------------------------------------ mundo

@@ -89,6 +89,14 @@ func interact(player: PlayerCharacter) -> void:
 	if item_id in ["dardos", "botella", "bengala"]:
 		amount = maxi(1, roundi(amount * float(Difficulty.get_value("supply_mul"))))
 	player.add_item(item_id, amount)
+	if item_id == "linterna" and player.is_remote:
+		# En red la linterna es de todos: si un compañero la encuentra, tú también recibes una.
+		var me := get_tree().get_first_node_in_group("player") as PlayerCharacter
+		if me and not me.has_flashlight:
+			me.add_item("linterna")
+			var mm := mission()
+			if mm:
+				mm.show_toast(Lang.t("%s encontró linternas para todos. F para encender o apagar.") % Net.player_name(player.net_id), 5.0)
 	Sfx.play(self, "pickup")
 	if item_id == "linterna":
 		toast(Lang.t("Linterna: F para encender o apagar. Cuidado: la luz también te delata."), 5.0)

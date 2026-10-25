@@ -22,6 +22,8 @@ func mission() -> MissionManager:
 
 
 func toast(text: String, seconds := 3.0) -> void:
+	if Net.replaying:
+		return      # acción repetida de otro jugador: el aviso es solo para quien la hizo
 	var mm := mission()
 	if mm:
 		mm.show_toast(text, seconds)

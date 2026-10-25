@@ -94,3 +94,5 @@ func _unhandled_input(event: InputEvent) -> void:
 		_select(maxi(index - 1, 0))
 	elif event.is_action_pressed("ui_accept"):
 		_confirm(index)
+	elif event.is_action_pressed("ui_cancel"):
+		get_tree().change_scene_to_file("res://scenes/menu_principal.tscn")   # ESC: volver al menú principal

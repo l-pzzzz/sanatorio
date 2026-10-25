@@ -554,6 +554,8 @@ func _setup_breath() -> void:
 
 
 func _play_at(sound: String, at: Vector3, volume_db := -4.0, unit_size := 10.0, max_distance := 60.0) -> void:
+	if Net.relay_creature_sound(self, sound, at, volume_db, unit_size, max_distance):
+		return      # cliente: los chasquidos los decide el anfitrión
 	var wav := "res://assets/audio/%s.wav" % sound
 	if not ResourceLoader.exists(wav):
 		return
@@ -888,6 +890,8 @@ var stun_light: OmniLight3D
 ## Aturde a la criatura `duration` segundos. Devuelve false si no le afecta
 ## (todavía inmune tras despertar ni a la luz de bengala: el Eco es ciego).
 func stun(duration: float, kind := "dart", source_pos := Vector3.ZERO) -> bool:
+	if Net.is_client():
+		return false      # en red solo el anfitrión aturde (los clientes lo piden con Net.try_stun)
 	if kind == "flash":
 		return false
 	if stun_immune > 0.0:

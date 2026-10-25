@@ -61,6 +61,10 @@ func setup(p: PlayerCharacter) -> void:
 	anim = body.get_node("AnimationPlayer")
 	head_mesh = body.get_node("Skeleton3D/head")
 	head_mesh.visible = false                  # sin cabeza en primera persona
+	# Las mallas venían sin enlace al esqueleto (ruta vacía): la animación movía los huesos pero
+	# el cuerpo se quedaba en pose T. Se enlazan aquí para que se vea animado.
+	for mesh: MeshInstance3D in skeleton.find_children("*", "MeshInstance3D", false, false):
+		mesh.skeleton = mesh.get_path_to(skeleton)
 	anim.animation_finished.connect(_on_finished)
 	_make_props()
 	_start_calibration()
@@ -177,7 +181,7 @@ func _process(delta: float) -> void:
 	var crouching := player.height < player.stand_height - 0.25
 	var clip := "idle"
 	var spd := 1.0
-	if speed > 0.4 and player.is_on_floor():
+	if speed > 0.4 and (player.is_remote or player.is_on_floor()):
 		if crouching:
 			clip = "crouch_walk"
 			spd = clampf(speed / crouch_ref_speed, 0.4, 1.6)

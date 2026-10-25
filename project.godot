@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Sanatorio"
-run/main_scene="uid://eei542afe1mi"
+run/main_scene="res://scenes/menu_principal.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -25,6 +25,7 @@ Lang="*res://scripts/systems/lang.gd"
 Difficulty="*uid://b2rh3vcmlviy1"
 NoiseManager="*uid://5fmjjcsbdjna"
 DisplayManager="*uid://cvv5u1gonlep1"
+Net="*res://scripts/systems/net.gd"
 SaveSystem="*res://scripts/systems/save_system.gd"
 PauseMenu="*res://scripts/systems/pause_menu.gd"
 

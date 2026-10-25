@@ -151,11 +151,13 @@ func _shoot() -> void:
 	var end := from + dir * reach
 	if target:
 		end = target.global_position + Vector3(0, 0.9, 0)
-		if target.has_method("stun") and target.call("stun", dart_stun, "dart", player.global_position):
+		var hit := Net.try_stun(target, dart_stun, "dart", player.global_position)
+		if hit == 1:
 			Sfx.play(self, "dart_hit", -2.0)
 			_toast(Lang.t("¡Le diste! Está aturdida unos segundos."), 2.0)
-		else:
+		elif hit == 0:
 			_toast(Lang.t("Ya se está recuperando: no le hace efecto."), 2.0)
+		# hit == -1: en red, el aviso llega cuando responde el anfitrión
 	_tracer(from + dir * 0.6 + camera.global_transform.basis.x * 0.12 - camera.global_transform.basis.y * 0.1, end)
 
 
@@ -247,6 +249,7 @@ func _flash() -> void:
 	var from := camera.global_position
 	var forward := -camera.global_transform.basis.z
 	var affected := false
+	var asked_host := false
 	for enemy: Node3D in get_tree().get_nodes_in_group("enemies"):
 		var to_enemy := (enemy.global_position + Vector3(0, 1.0, 0)) - from
 		if to_enemy.length() > flash_range or forward.dot(to_enemy.normalized()) < flash_cone_dot:
@@ -254,6 +257,10 @@ func _flash() -> void:
 		var query := PhysicsRayQueryParameters3D.create(from, from + to_enemy, 1, [player.get_rid(), enemy.get_rid()])
 		if not player.get_world_3d().direct_space_state.intersect_ray(query).is_empty():
 			continue    # una pared tapa la luz
-		if enemy.has_method("stun") and enemy.call("stun", flash_stun, "flash", player.global_position):
+		var r := Net.try_stun(enemy, flash_stun, "flash", player.global_position)
+		if r == 1:
 			affected = true
-	_toast(Lang.t("¡La luz lo cegó!") if affected else Lang.t("La bengala ilumina... pero no había nada que cegar."), 2.0)
+		elif r == -1:
+			asked_host = true
+	if not asked_host:
+		_toast(Lang.t("¡La luz lo cegó!") if affected else Lang.t("La bengala ilumina... pero no había nada que cegar."), 2.0)

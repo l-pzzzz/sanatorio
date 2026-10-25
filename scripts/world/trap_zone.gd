@@ -83,6 +83,8 @@ func _physics_process(delta: float) -> void:
 	bar_material.emission = Color(0.4, 0.7, 1.0)
 	bar_material.emission_energy_multiplier = 2.0 * flicker
 	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if Net.is_client():
+			break       # en red la trampa la resuelve el anfitrión (las criaturas son suyas)
 		var id := enemy.get_instance_id()
 		if hit.has(id) or not contains((enemy as Node3D).global_position):
 			continue

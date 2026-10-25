@@ -481,6 +481,8 @@ var stun_light: OmniLight3D
 ## Aturde a la criatura `duration` segundos. Devuelve false si no le afecta
 ## (todavía inmune tras despertar).
 func stun(duration: float, kind := "dart", source_pos := Vector3.ZERO) -> bool:
+	if Net.is_client():
+		return false      # en red solo el anfitrión aturde (los clientes lo piden con Net.try_stun)
 	if stun_immune > 0.0:
 		return false
 	if kind == "flash" and Difficulty.get_value("flash_dodge") and flash_used:
