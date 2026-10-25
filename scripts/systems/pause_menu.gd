@@ -119,7 +119,8 @@ func open() -> void:
 		return
 	is_open = true
 	closing = false
-	get_tree().paused = true
+	if not Net.is_online():
+		get_tree().paused = true      # en red el mundo sigue: solo tu personaje se queda quieto
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	visible = true
 	_refresh_texts()
@@ -185,8 +186,17 @@ func _on_main(id: String) -> void:
 		"resume":
 			resume()
 		"restart":
+			if Net.is_client():
+				_status(Lang.t("Solo el anfitrión puede reiniciar el nivel."), true)
+				return
+			if Net.is_online():
+				_ask("REINICIAR", Lang.t("¿Reiniciar el nivel para TODOS los jugadores?"), _do_restart)
+				return
 			_ask("REINICIAR", Lang.t("¿Reiniciar el nivel desde el principio?\nPerderás el progreso que no hayas guardado."), _do_restart)
 		"load":
+			if Net.is_online():
+				_status(Lang.t("Guardar y cargar no están disponibles en multijugador."), true)
+				return
 			slots_mode = "load"
 			_show_page(Page.SLOTS)
 		"save":
@@ -197,6 +207,10 @@ func _on_main(id: String) -> void:
 			slots_mode = "save"
 			_show_page(Page.SLOTS)
 		"quit":
+			if Net.is_online():
+				_ask("SALIR DE LA PARTIDA", Lang.t("¿Salir de la partida?\nVolverás al menú principal y tus compañeros seguirán sin ti.") if Net.is_client() \
+					else Lang.t("¿Cerrar la partida?\nEres el anfitrión: todos volverán al menú principal."), _do_leave)
+				return
 			_ask("SALIR DEL JUEGO", Lang.t("¿Salir del juego?\nPerderás el progreso que no hayas guardado."), _do_quit)
 
 
@@ -233,8 +247,16 @@ func _do_load(slot: int) -> void:
 		_status(Lang.t("No se pudo cargar: la ranura está vacía o dañada."), true)
 
 
+func _do_leave() -> void:
+	_hide()
+	Net.leave_to_menu()
+
+
 func _do_restart() -> void:
 	_hide()
+	if Net.is_online():
+		Net.reload_level()
+		return
 	SaveSystem.pending = {}
 	get_tree().paused = false
 	get_tree().reload_current_scene()
@@ -332,13 +354,22 @@ func _build_slots() -> void:
 
 func _refresh_texts() -> void:
 	var labels := {"resume": "REANUDAR", "restart": "REINICIAR", "load": "CARGAR", "save": "GUARDAR", "quit": "SALIR DEL JUEGO"}
+	if Net.is_online():
+		labels["quit"] = "SALIR DE LA PARTIDA"
 	for id in labels:
 		buttons[id].text = Lang.t(labels[id])
+	# En red: atenuadas las opciones que no se pueden usar (al pulsarlas se explica por qué).
+	var online := Net.is_online()
+	buttons["load"].modulate.a = 0.45 if online else 1.0
+	buttons["save"].modulate.a = 0.45 if online else 1.0
+	buttons["restart"].modulate.a = 0.45 if Net.is_client() else 1.0
 	confirm_yes.text = Lang.t("SÍ")
 	confirm_no.text = Lang.t("NO")
 	var mm := _mission()
 	if mm:
 		info.text = "%s  ·  %s  ·  %s" % [Lang.t(mm.level_title()), Difficulty.level_name(), _clock(mm.play_time)]
+		if Net.is_online():
+			info.text += "  ·  " + (Lang.t("EN RED: %d JUGADORES") % Net.players.size())
 	if is_open:
 		_show_page(page)
 

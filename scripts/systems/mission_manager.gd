@@ -102,6 +102,7 @@ func _ready() -> void:
 		SaveSystem.apply_pending(self)
 	else:
 		_play_intro()
+	Net.on_level_ready(self)          # multijugador: títeres de los compañeros, criaturas, etc.
 	if profile == "raiz" and Difficulty.level >= 1:
 		_ally_creatures.call_deferred()
 
@@ -158,15 +159,18 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if state != State.PLAYING and can_restart and (event.is_action_pressed("ui_accept") or (event is InputEventScreenTouch and event.pressed)):
+		# En red solo el anfitrión continúa o reinicia (y arrastra a todos).
 		if state == State.WON and next_level != "":
-			get_tree().change_scene_to_file(next_level)
+			Net.goto_scene(next_level)
 		else:
-			get_tree().reload_current_scene()
+			Net.reload_level()
 
 
 # ---------------------------------------------------------------- eventos
 
 func report(event: String, id: String) -> void:
+	if event == "stun":
+		Net.relay_report(event, id)   # en red las criaturas son del anfitrión: avisa a los demás
 	match event:
 		"item":
 			items_taken[id] = true
@@ -229,6 +233,9 @@ func _alarm_pulse() -> void:
 
 func on_player_caught(message := "EL MURCIÉLAGO TE ATRAPÓ", killer: Node3D = null) -> void:
 	if state != State.PLAYING:
+		return
+	if Net.is_online() and Net.in_game:
+		Net.handle_caught(self, message, killer)   # ¿a quién atraparon? (puede ser un compañero)
 		return
 	state = State.DEAD
 	message = Lang.t(message)
@@ -355,7 +362,7 @@ func _on_burn() -> void:
 	_freeze_world(false)
 	var tw := create_tween()
 	tw.tween_property(overlay, "color", Color(1.0, 0.5, 0.1, 1.0), 0.5)
-	tw.tween_callback(func() -> void: get_tree().change_scene_to_file(burn_scene))
+	tw.tween_callback(func() -> void: Net.goto_scene(burn_scene))
 
 
 func _on_escape() -> void:
@@ -367,14 +374,14 @@ func _on_escape() -> void:
 		Sfx.play(self, "gate_slide", -2.0)
 		var tb := create_tween()
 		tb.tween_property(overlay, "color", Color(1.0, 0.45, 0.1, 1.0), 1.2)
-		tb.tween_callback(func() -> void: get_tree().change_scene_to_file(burn_scene))
+		tb.tween_callback(func() -> void: Net.goto_scene(burn_scene))
 		return
 	if escape_scene != "":
 		_freeze_world(false)
 		Sfx.play(self, "gate_slide", -2.0)
 		var tw := create_tween()
 		tw.tween_property(overlay, "color", Color(0, 0, 0, 1.0), 1.4)
-		tw.tween_callback(func() -> void: get_tree().change_scene_to_file(escape_scene))
+		tw.tween_callback(func() -> void: Net.goto_scene(escape_scene))
 		return
 	_freeze_world()
 	var minutes := floori(play_time / 60.0)
@@ -399,6 +406,8 @@ func _freeze_world(show_mouse := true) -> void:
 func _end_screen(title: String, tint: Color, hint := "", epilogue := "") -> void:
 	if hint == "":
 		hint = Lang.t("Enter para volver a empezar")
+	if Net.is_client():
+		hint = Lang.t("Esperando a que el anfitrión continúe...")
 	var head := title
 	if epilogue != "":
 		head += "\n\n" + epilogue
@@ -649,3 +658,44 @@ func finish_load() -> void:
 	tween.tween_property(title_label, "modulate:a", 0.0, 0.8)
 	tween.parallel().tween_property(overlay, "color:a", 0.0, 1.0)
 	show_toast(Lang.t("Partida cargada."), 2.5)
+
+
+
+# ------------------------------------------------------------- multijugador
+
+## Te atraparon a ti (en red): ves tu muerte y luego observas a un compañero.
+func net_local_death(message: String, killer: Node3D) -> void:
+	message = Lang.t(message)
+	if player:
+		player.set_physics_process(false)
+		if player.flashlight_on:
+			player.toggle_flashlight()
+	if killer != null and player != null:
+		var hud: Array[CanvasItem] = []
+		for c in title_label.get_parent().get_children():
+			if c != overlay and c != title_label and c is CanvasItem and c.visible:
+				c.visible = false
+				hud.append(c)
+		var bat := not (killer is EcoCreature)
+		var seq := KillSequence.start(get_parent(), player, killer, bat)
+		seq.finished.connect(func() -> void:
+			for c in hud:
+				if is_instance_valid(c):
+					c.visible = true
+			if state == State.PLAYING:
+				show_toast(message, 4.0)
+				Net.start_spectating())
+		return
+	Sfx.play(self, "caught", -2.0)
+	show_toast(message, 4.0)
+	Net.start_spectating()
+
+
+## Atraparon a todo el equipo: pantalla de derrota para todos.
+func net_team_lost(message: String) -> void:
+	if state != State.PLAYING:
+		return
+	state = State.DEAD
+	_freeze_world()
+	var head := Lang.t("ATRAPARON A TODO EL EQUIPO") + "\n" + Lang.t(message)
+	_end_screen(head, Color(0.35, 0.0, 0.0), Lang.t("Enter para reintentar el nivel (todos)") if Net.is_host() else "")

@@ -59,6 +59,8 @@ func read_thumbnail(slot: int) -> Texture2D:
 
 ## "" si se puede guardar ahora; si no, el motivo (en español, sin traducir).
 func can_save() -> String:
+	if Net.is_online():
+		return "Guardar y cargar no están disponibles en multijugador."
 	var mm := _mission()
 	if mm == null or mm.player == null:
 		return "No hay ninguna partida en curso."

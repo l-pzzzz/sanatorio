@@ -56,8 +56,23 @@ var step_accum := 0.0
 var step_index := 0
 var was_on_floor := true
 
+# --- multijugador: un PlayerCharacter "remoto" es el títere de otro jugador (ver Net)
+var is_remote := false
+var net_id := 1
+var net_label := ""
+var net_has_state := false
+var net_dead := false
+var _net_pos := Vector3.ZERO
+var _net_yaw := 0.0
+var _net_pitch := 0.0
+var _net_hide_mismatch := 0.0
+var _name_tag: Label3D
+
 
 func _ready() -> void:
+	if is_remote:
+		_ready_remote()
+		return
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	collision.shape = collision.shape.duplicate()
 	height = stand_height
@@ -77,6 +92,8 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if PauseMenu.is_open:
+		return
 	if event.is_action_pressed("interact"):
 		_try_interact()
 	elif event.is_action_pressed("flashlight"):
@@ -96,12 +113,16 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if is_remote:
+		_remote_tick(delta)
+		return
 	if is_hidden:
 		velocity = Vector3.ZERO
 		_update_prompt()
 		return
 	var blocked := test_move(global_transform, Vector3.UP * (stand_height - height))
-	var crouching := Input.is_action_pressed("crouch") or (height < stand_height and blocked)
+	var locked := PauseMenu.is_open        # en red la pausa no congela el juego: solo te quedas quieto
+	var crouching := (Input.is_action_pressed("crouch") and not locked) or (height < stand_height and blocked)
 	height = move_toward(height, crouch_height if crouching else stand_height, crouch_transition_speed * delta)
 	collision.shape.height = height
 	collision.position.y = height / 2.0
@@ -109,11 +130,11 @@ func _physics_process(delta: float) -> void:
 
 	if not is_on_floor():
 		velocity += get_gravity() * delta
-	elif Input.is_action_just_pressed("jump") and not crouching:
+	elif Input.is_action_just_pressed("jump") and not crouching and not locked:
 		velocity.y = jump_velocity
 
 	var speed := crouch_speed if crouching else walk_speed
-	var move_input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	var move_input := Vector2.ZERO if locked else Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var target := (transform.basis * Vector3(move_input.x, 0.0, move_input.y)).normalized() * speed
 	velocity.x = move_toward(velocity.x, target.x, acceleration * delta)
 	velocity.z = move_toward(velocity.z, target.z, acceleration * delta)
@@ -155,7 +176,7 @@ func add_item(id: String, amount := 1) -> void:
 	inventory[id] = int(inventory.get(id, 0)) + amount
 	if id == "linterna":
 		has_flashlight = true
-		if not flashlight_on:
+		if not flashlight_on and not is_remote:
 			toggle_flashlight()
 	inventory_changed.emit()
 
@@ -259,10 +280,12 @@ func _try_interact() -> void:
 	if not is_physics_processing() or Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		return
 	if is_hidden:
+		Net.send_leave_hiding()
 		leave_hiding()
 		return
 	var target := _current_interactable()
 	if target:
+		Net.send_interact(target)     # en red: los demás repiten esta acción con tu títere
 		target.call("interact", self)
 
 
@@ -334,7 +357,8 @@ func enter_hiding(spot: Node3D) -> void:
 	height = stand_height
 	head.position.y = height - 0.2
 	hands.visible = false
-	hide_overlay.visible = true
+	if hide_overlay:
+		hide_overlay.visible = true
 	Sfx.play(self, "locker_open", -8.0)
 	NoiseManager.emit_noise(global_position, locker_loudness)
 	hiding_changed.emit(true)
@@ -351,8 +375,9 @@ func leave_hiding() -> void:
 	if spot and spot.has_method("set_inside"):
 		spot.call("set_inside", false)
 	collision.set_deferred("disabled", false)
-	hands.visible = (body == null)
-	hide_overlay.visible = false
+	hands.visible = (body == null) and not is_remote
+	if hide_overlay:
+		hide_overlay.visible = false
 	if flashlight_before_hide and not flashlight_on:
 		toggle_flashlight()
 	Sfx.play(self, "locker_close", -8.0)
@@ -377,3 +402,91 @@ func _build_hide_overlay(layer: Node) -> void:
 		rect.anchor_top = bar[0]
 		rect.anchor_bottom = bar[1]
 		hide_overlay.add_child(rect)
+
+
+# ------------------------------------------------------------- multijugador
+
+## Títere de otro jugador: sin cámara, sin HUD ni controles; se mueve con lo que llega por red.
+func _ready_remote() -> void:
+	collision.shape = collision.shape.duplicate()
+	height = stand_height
+	collision_layer = 1           # capa 1: así el murciélago (anfitrión) puede verlo con su rayo
+	collision_mask = 0
+	set_process_unhandled_input(false)
+	($Head/Camera3D as Camera3D).current = false
+	$HandsLayer.visible = false
+	hands.visible = false
+	_setup_flashlight()
+	flashlight.shadow_enabled = false
+	if use_body:
+		body = PlayerBody.new()
+		add_child(body)
+		body.setup(self)
+		body.head_mesh.visible = true      # a los demás sí se les ve la cabeza
+	_name_tag = Label3D.new()
+	_name_tag.text = net_label
+	_name_tag.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_name_tag.fixed_size = true
+	_name_tag.pixel_size = 0.0014
+	_name_tag.font_size = 28
+	_name_tag.outline_size = 8
+	_name_tag.modulate = Color(0.85, 0.8, 0.75, 0.85)
+	_name_tag.position = Vector3(0, stand_height + 0.35, 0)
+	add_child(_name_tag)
+
+
+## Estado que manda el dueño de este títere ~20 veces por segundo.
+func net_apply(pos: Vector3, yaw: float, pitch: float, h: float, vel: Vector3, flash: bool, hidden: bool, dead_flag: bool) -> void:
+	_net_pos = pos
+	_net_yaw = yaw
+	_net_pitch = pitch
+	height = h
+	velocity = vel
+	if flashlight and not dead_flag:
+		flashlight_on = flash
+		flashlight.visible = flash
+	if not net_has_state:
+		net_has_state = true
+		global_position = pos
+		rotation.y = yaw
+		visible = not dead_flag
+	net_set_dead(dead_flag)
+	# La acción de esconderse llega aparte; esto solo corrige si quedaron desincronizados.
+	if hidden != is_hidden:
+		_net_hide_mismatch += 1.0 / 20.0
+		if _net_hide_mismatch > 0.6:
+			is_hidden = hidden
+			if not hidden:
+				hidden_in = null
+			hiding_changed.emit(hidden)
+	else:
+		_net_hide_mismatch = 0.0
+
+
+func net_set_dead(on: bool) -> void:
+	if on == net_dead:
+		return
+	net_dead = on
+	visible = not on
+	collision_layer = 0 if on else 1
+	if on and flashlight:
+		flashlight_on = false
+		flashlight.visible = false
+
+
+func _remote_tick(delta: float) -> void:
+	if not net_has_state:
+		return
+	var k := 1.0 - exp(-15.0 * delta)
+	if global_position.distance_to(_net_pos) > 4.0:
+		global_position = _net_pos
+	else:
+		global_position = global_position.lerp(_net_pos, k)
+	rotation.y = lerp_angle(rotation.y, _net_yaw, k)
+	head.rotation.x = lerpf(head.rotation.x, _net_pitch, k)
+	head.position.y = _eye_height()
+	collision.shape.height = height
+	collision.position.y = height / 2.0
+	if _name_tag:
+		_name_tag.visible = not is_hidden
+		_name_tag.position.y = height + 0.35
