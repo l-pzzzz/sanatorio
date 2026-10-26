@@ -47,6 +47,7 @@ var _calib_samples := PackedFloat32Array()
 func _ready() -> void:
 	_load_settings()
 	recalibrate()
+	_request_android_permission()
 	var bus := AudioServer.bus_count
 	AudioServer.add_bus(bus)
 	AudioServer.set_bus_name(bus, "Microphone")
@@ -126,6 +127,23 @@ func _update_floor(delta: float) -> void:
 		var listener := get_tree().get_first_node_in_group("player") as Node3D
 		if listener:
 			emit_noise(listener.global_position, last_loudness)
+
+
+## En Android el micrófono se pide en tiempo de ejecución. Cuando el jugador acepta se reinicia la captura.
+func _request_android_permission() -> void:
+	if OS.get_name() != "Android":
+		return
+	if "RECORD_AUDIO" in OS.get_granted_permissions():
+		return
+	get_tree().on_request_permissions_result.connect(_on_permission_result)
+	OS.request_permission("RECORD_AUDIO")
+
+
+func _on_permission_result(permission: String, granted: bool) -> void:
+	if permission.ends_with("RECORD_AUDIO") and granted and microphone:
+		microphone.stop()
+		microphone.play()
+		recalibrate()
 
 
 func _update_meter() -> void:

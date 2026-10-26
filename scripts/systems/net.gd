@@ -83,7 +83,7 @@ func _ready() -> void:
 	if my_name.strip_edges() == "":
 		my_name = OS.get_environment("USERNAME") if OS.get_environment("USERNAME") != "" else OS.get_environment("USER")
 	if my_name.strip_edges() == "":
-		my_name = "Jugador"
+		my_name = Lang.t("Jugador")
 	my_name = my_name.substr(0, 16)
 
 
@@ -108,7 +108,7 @@ func my_id() -> int:
 
 
 func player_name(id: int) -> String:
-	return str(players.get(id, {}).get("name", "Jugador %d" % id))
+	return str(players.get(id, {}).get("name", Lang.t("Jugador %d") % id))
 
 
 ## Direcciones IPv4 de esta PC en la red local (para unirse escribiendo la IP).
@@ -123,7 +123,7 @@ func local_ips() -> PackedStringArray:
 func set_my_name(n: String) -> void:
 	my_name = n.strip_edges().substr(0, 16)
 	if my_name == "":
-		my_name = "Jugador"
+		my_name = Lang.t("Jugador")
 	var config := ConfigFile.new()
 	config.load("user://settings.cfg")
 	config.set_value("net", "name", my_name)
@@ -234,7 +234,7 @@ func _register(player_label: String, protocol: int) -> void:
 			if multiplayer.multiplayer_peer is ENetMultiplayerPeer:
 				(multiplayer.multiplayer_peer as ENetMultiplayerPeer).disconnect_peer(id))
 		return
-	players[id] = {"name": player_label.strip_edges().substr(0, 16) if player_label.strip_edges() != "" else "Jugador %d" % players.size()}
+	players[id] = {"name": player_label.strip_edges().substr(0, 16) if player_label.strip_edges() != "" else Lang.t("Jugador %d") % players.size()}
 	_set_players.rpc(players)
 	_set_lobby.rpc_id(id, lobby_difficulty, lobby_level)
 	players_changed.emit()

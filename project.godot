@@ -33,6 +33,7 @@ PauseMenu="*res://scripts/systems/pause_menu.gd"
 
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/handheld/orientation=6
 
 [input]
 
@@ -84,3 +85,5 @@ jump={
 [rendering]
 
 rendering_device/driver.windows="d3d12"
+renderer/rendering_method.mobile="mobile"
+textures/vram_compression/import_etc2_astc=true

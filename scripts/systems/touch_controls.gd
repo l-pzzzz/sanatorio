@@ -280,4 +280,4 @@ func _draw_pad() -> void:
 		pad.draw_circle(c, r, Color(1, 1, 1, 0.30 if on else 0.12))
 		pad.draw_arc(c, r, 0.0, TAU, 32, white, 3.0)
 		pad.draw_string(font, c + Vector2(-r, r * 0.2), str(b["text"]), HORIZONTAL_ALIGNMENT_CENTER, r * 2.0, int(r * 0.75), Color(1, 1, 1, 0.85))
-		pad.draw_string(font, c + Vector2(-r - 10.0, r + 16.0 * s), str(b["label"]), HORIZONTAL_ALIGNMENT_CENTER, r * 2.0 + 20.0, int(12.0 * s), Color(1, 1, 1, 0.55))
+		pad.draw_string(font, c + Vector2(-r - 10.0, r + 16.0 * s), Lang.t(str(b["label"])), HORIZONTAL_ALIGNMENT_CENTER, r * 2.0 + 20.0, int(12.0 * s), Color(1, 1, 1, 0.55))
