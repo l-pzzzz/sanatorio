@@ -5,6 +5,8 @@ extends Node
 ## Ajustes del micrófono (pantalla MICRÓFONO del menú principal, en user://settings.cfg):
 ##   sensibilidad 0..1  (0.5 = el comportamiento original: margen 8 dB, umbral mínimo -45 dB)
 ##   activado / desactivado, y qué micrófono usar.
+##   MODO AMBIENTE RUIDOSO (ferias, aulas llenas): exige más margen sobre el ruido de fondo, que la voz
+##   dure unos instantes y trata un ruido que no para como ambiente (sube el "suelo") en vez de voz.
 ## En red, los ruidos de un cliente se reenvían al anfitrión, que es quien mueve a las criaturas.
 
 signal noise_emitted(noise_position: Vector3, loudness: float)
@@ -36,11 +38,15 @@ var sensitivity := DEFAULT_SENSITIVITY
 var mic_enabled := true
 var heard_at := -100.0            ## Última vez (s) que el micrófono superó el umbral
 var microphone: AudioStreamPlayer
+var noisy_mode := false           ## Modo ambiente ruidoso (feria)
+var ui_open := false              ## Con un panel de ajustes abierto el micrófono no alerta a nadie
+var above_time := 0.0             ## Cuánto lleva seguido el sonido por encima del umbral
+var _calib_samples := PackedFloat32Array()
 
 
 func _ready() -> void:
 	_load_settings()
-	calibration_left = calibration_time
+	recalibrate()
 	var bus := AudioServer.bus_count
 	AudioServer.add_bus(bus)
 	AudioServer.set_bus_name(bus, "Microphone")
@@ -73,22 +79,49 @@ func _process(delta: float) -> void:
 	_update_meter()
 
 
+## Umbral para un nivel de ruido de fondo dado (en modo ruidoso pide 4 dB más de margen).
+func _threshold_for(floor_level: float) -> float:
+	return maxf(floor_level + margin_db + (4.0 if noisy_mode else 0.0), min_threshold_db)
+
+
+func _percentile(samples: PackedFloat32Array, p: float) -> float:
+	if samples.is_empty():
+		return -80.0
+	var sorted := samples.duplicate()
+	sorted.sort()
+	return sorted[clampi(int(p * float(sorted.size() - 1)), 0, sorted.size() - 1)]
+
+
 func _update_floor(delta: float) -> void:
 	if calibration_left > 0.0:
 		calibration_left -= delta
+		_calib_samples.append(level_db)
 		floor_db = level_db
-		threshold_db = maxf(floor_db + margin_db, min_threshold_db)
+		threshold_db = _threshold_for(floor_db)
+		if calibration_left <= 0.0:
+			if noisy_mode:
+				# Con ruido de feria el último instante puede ser un hueco: se usa el percentil 90.
+				floor_db = _percentile(_calib_samples, 0.9)
+				threshold_db = _threshold_for(floor_db)
+			_calib_samples = PackedFloat32Array()
 		return
-	threshold_db = maxf(floor_db + margin_db, min_threshold_db)
+	threshold_db = _threshold_for(floor_db)
 	if level_db < floor_db:
 		floor_db = level_db
+		above_time = 0.0
 	elif level_db < threshold_db:
-		floor_db = move_toward(floor_db, level_db, floor_adapt_per_second * delta)
-	elif cooldown_left <= 0.0:
-		cooldown_left = cooldown
+		floor_db = move_toward(floor_db, level_db, floor_adapt_per_second * (4.0 if noisy_mode else 1.0) * delta)
+		above_time = 0.0
+	else:
+		above_time += delta
+		if noisy_mode and above_time > 1.5:
+			floor_db += 3.0 * delta      # un ruido que no para es ambiente, no voz
+		if cooldown_left > 0.0 or above_time < (0.18 if noisy_mode else 0.0):
+			return
+		cooldown_left = cooldown * (1.7 if noisy_mode else 1.0)
 		last_loudness = clampf((level_db - threshold_db) / loudness_range_db, 0.0, 1.0)
 		heard_at = Time.get_ticks_msec() / 1000.0
-		if not mic_enabled or Net.local_dead:
+		if not mic_enabled or Net.local_dead or ui_open:
 			return
 		var listener := get_tree().get_first_node_in_group("player") as Node3D
 		if listener:
@@ -138,6 +171,11 @@ func set_mic_enabled(on: bool) -> void:
 	mic_enabled = on
 
 
+func set_noisy_mode(on: bool) -> void:
+	noisy_mode = on
+	recalibrate()
+
+
 func input_devices() -> PackedStringArray:
 	return AudioServer.get_input_device_list()
 
@@ -158,7 +196,8 @@ func set_device(device: String) -> void:
 
 ## Vuelve a medir el ruido de fondo de la habitación.
 func recalibrate() -> void:
-	calibration_left = calibration_time
+	calibration_left = calibration_time * (2.0 if noisy_mode else 1.0)
+	_calib_samples = PackedFloat32Array()
 
 
 func save_settings() -> void:
@@ -166,6 +205,7 @@ func save_settings() -> void:
 	config.load(CONFIG_PATH)          # conserva idioma, pantalla completa, nombre...
 	config.set_value("mic", "sensitivity", sensitivity)
 	config.set_value("mic", "enabled", mic_enabled)
+	config.set_value("mic", "noisy_mode", noisy_mode)
 	config.set_value("mic", "device", AudioServer.input_device)
 	config.save(CONFIG_PATH)
 
@@ -177,6 +217,7 @@ func _load_settings() -> void:
 		return
 	set_sensitivity(float(config.get_value("mic", "sensitivity", DEFAULT_SENSITIVITY)))
 	mic_enabled = bool(config.get_value("mic", "enabled", true))
+	noisy_mode = bool(config.get_value("mic", "noisy_mode", false))
 	var device := str(config.get_value("mic", "device", "Default"))
 	if device != "Default" and device in AudioServer.get_input_device_list():
 		AudioServer.input_device = device

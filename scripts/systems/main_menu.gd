@@ -143,6 +143,7 @@ func _refresh_texts() -> void:
 	b["lobby_leave"].text = Lang.t("SALIR DE LA SALA")
 	b["mic_toggle"].text = Lang.t("MICRÓFONO: ACTIVADO") if NoiseManager.mic_enabled else Lang.t("MICRÓFONO: DESACTIVADO")
 	b["mic_device"].text = Lang.t("DISPOSITIVO: %s") % _device_label(NoiseManager.current_device())
+	b["mic_noisy"].text = Lang.t("MODO AMBIENTE RUIDOSO (FERIA): SÍ") if NoiseManager.noisy_mode else Lang.t("MODO AMBIENTE RUIDOSO (FERIA): NO")
 	b["mic_recal"].text = Lang.t("RECALIBRAR (medir el silencio)")
 	b["mic_reset"].text = Lang.t("RESTABLECER")
 	b["mic_back"].text = Lang.t("GUARDAR Y VOLVER")
@@ -306,6 +307,12 @@ func _toggle_mic() -> void:
 	_refresh_texts()
 
 
+func _toggle_noisy() -> void:
+	_sfx("click", -8.0)
+	NoiseManager.set_noisy_mode(not NoiseManager.noisy_mode)
+	_refresh_texts()
+
+
 func _cycle_device() -> void:
 	_sfx("click", -8.0)
 	var devices: PackedStringArray = NoiseManager.input_devices()
@@ -320,6 +327,7 @@ func _reset_mic() -> void:
 	_sfx("click", -8.0)
 	NoiseManager.set_sensitivity(NoiseManager.DEFAULT_SENSITIVITY)
 	NoiseManager.set_mic_enabled(true)
+	NoiseManager.set_noisy_mode(false)
 	NoiseManager.set_device("Default")
 	mic_slider.set_value_no_signal(NoiseManager.sensitivity * 100.0)
 	_refresh_texts()
@@ -519,6 +527,7 @@ func _build() -> void:
 	# --- micrófono
 	var mic := _page(content, Page.MIC)
 	_add(mic, "mic_toggle", _toggle_mic, 22).custom_minimum_size.y = 40
+	_add(mic, "mic_noisy", _toggle_noisy, 18).custom_minimum_size.y = 38
 	_add(mic, "mic_device", _cycle_device, 18).custom_minimum_size.y = 38
 	mic.add_child(_spacer(4))
 	mic_value = _make_label(22, BONE)
@@ -551,7 +560,8 @@ func _build() -> void:
 	var how := _make_label(14, Color(BONE, 0.4))
 	how.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	how.custom_minimum_size = Vector2(560, 0)
-	how.text = Lang.t("Habla, aplaude o respira cerca del micrófono. Si la barra cruza la línea roja, las criaturas te oyen. Más sensibilidad = te oyen con menos ruido.")
+	how.text = Lang.t("Habla, aplaude o respira cerca del micrófono. Si la barra cruza la línea roja, las criaturas te oyen. Más sensibilidad = te oyen con menos ruido.") \
+		+ "\n" + Lang.t("¿Hay mucho ruido alrededor? Activa el MODO AMBIENTE RUIDOSO, baja la sensibilidad y pulsa RECALIBRAR.")
 	mic.add_child(how)
 	mic.add_child(_spacer(4))
 	_add(mic, "mic_recal", func() -> void:

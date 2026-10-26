@@ -5,7 +5,7 @@ extends CanvasLayer
 ## Solo funciona en niveles con MissionManager y mientras se juega (no en menús,
 ## cinemáticas ni en la pantalla de muerte). El guardado lo hace SaveSystem.
 
-enum Page { MAIN, SLOTS, CONFIRM }
+enum Page { MAIN, SLOTS, CONFIRM, MIC }
 
 const BLOOD := Color(0.8, 0.12, 0.1)
 const BONE := Color(0.85, 0.8, 0.75)
@@ -63,12 +63,40 @@ var confirm_yes: Button
 var confirm_no: Button
 var status: Label
 var hint: Label
+var mic_box: VBoxContainer
+var mic_buttons := {}               ## id -> Button de la pantalla MICRÓFONO
+var mic_value: Label
+var mic_slider: HSlider
+var mic_meter: MicMeter
+var mic_state: Label
 var buttons := {}                   ## id -> Button del menú principal
 var drone: AudioStreamPlayer
 var flicker_left := 0.0
 var flicker_wait := 1.0
 var status_left := 0.0
 var empty_thumb: Texture2D
+
+
+## Barra del micrófono: nivel actual, línea del umbral y marca cuando te oyen.
+class MicMeter extends Control:
+	const MIN_DB := -80.0
+	const MAX_DB := 0.0
+
+	func _x(db: float) -> float:
+		return size.x * clampf((db - MIN_DB) / (MAX_DB - MIN_DB), 0.0, 1.0)
+
+	func _draw() -> void:
+		var nm := NoiseManager
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.08, 0.01, 0.01, 0.9))
+		var heard: bool = Time.get_ticks_msec() / 1000.0 - nm.heard_at < 0.35
+		var over: bool = nm.level_db >= nm.threshold_db
+		var fill := Color(0.85, 0.15, 0.1) if over else Color(0.85, 0.8, 0.75, 0.7)
+		if not nm.mic_enabled:
+			fill = Color(0.4, 0.4, 0.4, 0.4)
+		draw_rect(Rect2(0, 3, _x(nm.level_db), size.y - 6), fill)
+		var tx := _x(nm.threshold_db)
+		draw_rect(Rect2(tx - 2, -6, 4, size.y + 12), Color(1.0, 0.2, 0.15) if not heard else Color.WHITE)
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.8, 0.12, 0.1, 0.6), false, 2.0)
 
 
 func _ready() -> void:
@@ -153,6 +181,7 @@ func resume() -> void:
 
 
 func _hide() -> void:
+	_close_mic()
 	is_open = false
 	closing = false
 	visible = false
@@ -206,6 +235,8 @@ func _on_main(id: String) -> void:
 				return
 			slots_mode = "save"
 			_show_page(Page.SLOTS)
+		"mic":
+			_show_page(Page.MIC)
 		"quit":
 			if Net.is_online():
 				_ask("SALIR DE LA PARTIDA", Lang.t("¿Salir de la partida?\nVolverás al menú principal y tus compañeros seguirán sin ti.") if Net.is_client() \
@@ -293,6 +324,8 @@ func _show_page(p: Page) -> void:
 	main_box.visible = p == Page.MAIN
 	slots_box.visible = p == Page.SLOTS
 	confirm_box.visible = p == Page.CONFIRM
+	mic_box.visible = p == Page.MIC
+	NoiseManager.ui_open = p == Page.MIC     # con los ajustes abiertos, el micrófono no alerta a nadie
 	match p:
 		Page.MAIN:
 			title.text = Lang.t("PAUSA")
@@ -303,6 +336,10 @@ func _show_page(p: Page) -> void:
 		Page.CONFIRM:
 			title.text = Lang.t(confirm_title)
 			_focus(confirm_no)
+		Page.MIC:
+			title.text = Lang.t("MICRÓFONO")
+			_refresh_mic()
+			_focus(mic_buttons["mic_toggle"])
 	hint.text = Lang.t("FLECHAS / RATÓN  elegir      ENTER  aceptar      ESC  reanudar") if p == Page.MAIN \
 		else Lang.t("FLECHAS / RATÓN  elegir      ENTER  aceptar      ESC  volver")
 
@@ -353,7 +390,7 @@ func _build_slots() -> void:
 
 
 func _refresh_texts() -> void:
-	var labels := {"resume": "REANUDAR", "restart": "REINICIAR", "load": "CARGAR", "save": "GUARDAR", "quit": "SALIR DEL JUEGO"}
+	var labels := {"resume": "REANUDAR", "restart": "REINICIAR", "load": "CARGAR", "save": "GUARDAR", "mic": "MICRÓFONO", "quit": "SALIR DEL JUEGO"}
 	if Net.is_online():
 		labels["quit"] = "SALIR DE LA PARTIDA"
 	for id in labels:
@@ -422,7 +459,7 @@ func _build() -> void:
 	main_box = VBoxContainer.new()
 	main_box.add_theme_constant_override("separation", 6)
 	content.add_child(main_box)
-	for id in ["resume", "restart", "load", "save", "quit"]:
+	for id in ["resume", "restart", "load", "save", "mic", "quit"]:
 		var b := _make_button("", 26)
 		b.pressed.connect(_on_main.bind(id))
 		main_box.add_child(b)
@@ -432,6 +469,8 @@ func _build() -> void:
 	slots_box = VBoxContainer.new()
 	slots_box.add_theme_constant_override("separation", 8)
 	content.add_child(slots_box)
+
+	_build_mic_page()
 
 	confirm_box = VBoxContainer.new()
 	confirm_box.add_theme_constant_override("separation", 6)
@@ -477,6 +516,115 @@ func _build() -> void:
 		if is_open:
 			drone.play())
 	add_child(drone)
+
+
+# --------------------------------------------------------------- micrófono
+
+func _build_mic_page() -> void:
+	mic_box = VBoxContainer.new()
+	mic_box.add_theme_constant_override("separation", 6)
+	content.add_child(mic_box)
+	for id in ["mic_toggle", "mic_noisy"]:
+		var b := _make_button("", 20)
+		b.pressed.connect(_on_mic.bind(id))
+		mic_box.add_child(b)
+		mic_buttons[id] = b
+	mic_value = _make_label(20, BONE)
+	mic_box.add_child(mic_value)
+	mic_slider = _make_slider()
+	mic_slider.value_changed.connect(func(v: float) -> void:
+		NoiseManager.set_sensitivity(v / 100.0)
+		_refresh_mic())
+	mic_box.add_child(mic_slider)
+	var scale_row := HBoxContainer.new()
+	scale_row.custom_minimum_size = Vector2(420, 0)
+	scale_row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	for side in ["lo", "hi"]:
+		var l := _make_label(13, Color(BONE, 0.35))
+		l.name = "Escala_" + side
+		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if side == "lo" else HORIZONTAL_ALIGNMENT_RIGHT
+		scale_row.add_child(l)
+	mic_box.add_child(scale_row)
+	mic_box.add_child(_spacer(6))
+	mic_meter = MicMeter.new()
+	mic_meter.custom_minimum_size = Vector2(420, 22)
+	mic_meter.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	mic_meter.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mic_box.add_child(mic_meter)
+	mic_state = _make_label(16, DIM)
+	mic_box.add_child(mic_state)
+	for id in ["mic_recal", "mic_back"]:
+		var b2 := _make_button("", 20)
+		b2.pressed.connect(_on_mic.bind(id))
+		mic_box.add_child(b2)
+		mic_buttons[id] = b2
+	_wrap_focus(mic_box)
+
+
+func _on_mic(id: String) -> void:
+	_sfx("click", -8.0)
+	match id:
+		"mic_toggle":
+			NoiseManager.set_mic_enabled(not NoiseManager.mic_enabled)
+		"mic_noisy":
+			NoiseManager.set_noisy_mode(not NoiseManager.noisy_mode)
+		"mic_recal":
+			NoiseManager.recalibrate()
+		"mic_back":
+			_show_page(Page.MAIN)
+			return
+	_refresh_mic()
+
+
+func _refresh_mic() -> void:
+	mic_buttons["mic_toggle"].text = Lang.t("MICRÓFONO: ACTIVADO") if NoiseManager.mic_enabled else Lang.t("MICRÓFONO: DESACTIVADO")
+	mic_buttons["mic_noisy"].text = Lang.t("MODO AMBIENTE RUIDOSO (FERIA): SÍ") if NoiseManager.noisy_mode else Lang.t("MODO AMBIENTE RUIDOSO (FERIA): NO")
+	mic_buttons["mic_recal"].text = Lang.t("RECALIBRAR (medir el silencio)")
+	mic_buttons["mic_back"].text = Lang.t("VOLVER")
+	mic_value.text = Lang.t("SENSIBILIDAD: %d %%") % roundi(NoiseManager.sensitivity * 100.0)
+	mic_slider.set_value_no_signal(NoiseManager.sensitivity * 100.0)
+	(mic_box.find_child("Escala_lo", true, false) as Label).text = Lang.t("solo si gritas")
+	(mic_box.find_child("Escala_hi", true, false) as Label).text = Lang.t("hasta si respiras")
+
+
+## Al salir de la pantalla del micrófono se guardan los ajustes y se descarta lo captado durante la pausa.
+func _close_mic() -> void:
+	if not NoiseManager.ui_open:
+		return
+	NoiseManager.ui_open = false
+	NoiseManager.save_settings()
+	if NoiseManager.capture:
+		NoiseManager.capture.clear_buffer()
+
+
+func _make_slider() -> HSlider:
+	var slider := HSlider.new()
+	slider.min_value = 0
+	slider.max_value = 100
+	slider.step = 5
+	slider.custom_minimum_size = Vector2(420, 28)
+	slider.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var track := StyleBoxFlat.new()
+	track.bg_color = Color(0.12, 0.02, 0.02)
+	track.content_margin_top = 4
+	track.content_margin_bottom = 4
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = Color(BLOOD, 0.85)
+	fill.content_margin_top = 4
+	fill.content_margin_bottom = 4
+	var fill_hi := fill.duplicate() as StyleBoxFlat
+	fill_hi.bg_color = SELECT
+	slider.add_theme_stylebox_override("slider", track)
+	slider.add_theme_stylebox_override("grabber_area", fill)
+	slider.add_theme_stylebox_override("grabber_area_highlight", fill_hi)
+	var knob := Image.create(14, 26, false, Image.FORMAT_RGBA8)
+	knob.fill(BONE)
+	var knob_hi := Image.create(14, 26, false, Image.FORMAT_RGBA8)
+	knob_hi.fill(Color.WHITE)
+	slider.add_theme_icon_override("grabber", ImageTexture.create_from_image(knob))
+	slider.add_theme_icon_override("grabber_highlight", ImageTexture.create_from_image(knob_hi))
+	return slider
 
 
 func _make_label(font_size: int, color: Color) -> Label:
@@ -557,6 +705,17 @@ func _focus(b: Button) -> void:
 func _process(delta: float) -> void:
 	if not is_open:
 		return
+	if page == Page.MIC:
+		mic_meter.queue_redraw()
+		var nm := NoiseManager
+		if not nm.mic_enabled:
+			mic_state.text = Lang.t("Micrófono desactivado: las criaturas solo oirán tus pasos y objetos.")
+		elif nm.calibration_left > 0.0:
+			mic_state.text = Lang.t("CALIBRANDO... quédate en silencio")
+		elif Time.get_ticks_msec() / 1000.0 - nm.heard_at < 0.5:
+			mic_state.text = Lang.t("¡TE OYEN!   (%.0f dB · umbral %.0f dB)") % [nm.level_db, nm.threshold_db]
+		else:
+			mic_state.text = Lang.t("silencio   (%.0f dB · umbral %.0f dB)") % [nm.level_db, nm.threshold_db]
 	# El título parpadea como las lámparas del sanatorio.
 	if flicker_left > 0.0:
 		flicker_left -= delta
