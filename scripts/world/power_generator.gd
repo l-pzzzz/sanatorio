@@ -53,7 +53,7 @@ func interact(player: PlayerCharacter) -> void:
 	inserted += amount
 	_update_indicators()
 	Sfx.play(self, "pickup")
-	NoiseManager.emit_noise(global_position, 0.4)
+	NoiseManager.emit_world_noise(global_position, 0.4)
 	if inserted >= fuses_needed:
 		running = true
 		Sfx.play(self, "power_on", -4.0)

@@ -89,7 +89,7 @@ func interact(_player: PlayerCharacter) -> void:
 		return
 	busy = true
 	Sfx.play(self, "valve_turn", 0.0)
-	NoiseManager.emit_noise(global_position, 1.3)
+	NoiseManager.emit_world_noise(global_position, 1.3)
 	var tw := create_tween()
 	tw.tween_property(wheel, "rotation:y", -TAU * 2.0, turn_time).set_trans(Tween.TRANS_SINE)
 	tw.tween_callback(_done)

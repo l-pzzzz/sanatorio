@@ -89,6 +89,13 @@ func interact(player: PlayerCharacter) -> void:
 	if item_id in ["dardos", "botella", "bengala"]:
 		amount = maxi(1, roundi(amount * float(Difficulty.get_value("supply_mul"))))
 	player.add_item(item_id, amount)
+	var teammate := get_tree().get_first_node_in_group("player") as PlayerCharacter
+	if player.is_remote and teammate != null and Net.is_shared_item(item_id):
+		# Objeto del equipo: si lo encontró un compañero, tú también lo recibes.
+		teammate.add_item(item_id, amount)
+		var mm_shared := mission()
+		if mm_shared:
+			mm_shared.show_toast(Lang.t("%s encontró: %s (ahora lo tiene todo el equipo)") % [Net.player_name(player.net_id), ItemInfo.display_name(item_id)], 4.0)
 	if item_id == "linterna" and player.is_remote:
 		# En red la linterna es de todos: si un compañero la encuentra, tú también recibes una.
 		var me := get_tree().get_first_node_in_group("player") as PlayerCharacter
@@ -103,6 +110,8 @@ func interact(player: PlayerCharacter) -> void:
 	elif item_id == "pistola":
 		var extra := maxi(1, roundi(2 * float(Difficulty.get_value("supply_mul"))))
 		player.add_item("dardos", extra)
+		if player.is_remote and teammate != null:
+			teammate.add_item("dardos", extra)
 		toast(Lang.t("Pistola de dardos: clic izquierdo dispara y ATURDE a la criatura unos segundos. Te dejo %d dardos.") % extra, 6.0)
 	elif item_id == "bidon_combustible":
 		toast(Lang.t("Bidón de combustible (%d). El incinerador de la sala de la raíz necesita 2.") % player.count_item("bidon_combustible"), 5.0)

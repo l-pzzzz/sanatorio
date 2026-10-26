@@ -51,6 +51,8 @@ var _sw_snd := 3.0
 var _sw_wake := 0.0
 var _watch_age := 0.0
 var _sw_k := 0.0                          ## 0 = vertical, 1 = tumbado nadando
+var _snap_target := Vector3.ZERO          ## En red (cliente): a quién mira el Leviatán del anfitrión (local de la cámara)
+var _target_t := 0.0
 
 
 # ------------------------------------------------------------ cabeza (también se usa al devorarte)
@@ -221,6 +223,68 @@ func _ready() -> void:
 	head_goal = head_pos
 	_next_rise = 5.0
 	_player = get_tree().get_first_node_in_group("player") as Node3D
+	if _is_puppet():
+		set_physics_process(false)
+
+
+## En red, solo el anfitrión piensa. Los clientes copian lo que él manda (ver `net_pack`).
+func _is_puppet() -> bool:
+	return Net.is_client() and Net.in_game
+
+
+func _in_net_game() -> bool:
+	return Net.is_online() and Net.in_game
+
+
+# ------------------------------------------------------------ red
+
+func net_pack() -> Array:
+	return [int(state), den, head_pos, arch, _sw_c, _sw_yaw, anger, _player_local(), head.open if head else 0.0]
+
+
+func _net_apply(delta: float) -> void:
+	var s: Array = Net.lev_snap
+	if s.size() < 9:
+		return
+	var ns := int(s[0])
+	if ns != int(state):
+		_on_remote_state(ns)
+	den = s[1]
+	head_goal = s[2]
+	arch = float(s[3])
+	_sw_c = s[4]
+	_sw_yaw = float(s[5])
+	anger = float(s[6])
+	_snap_target = s[7]
+	if head:
+		head.set_jaw(lerpf(head.open, float(s[8]), 1.0 - exp(-delta * 14.0)))
+
+
+func _on_remote_state(ns: int) -> void:
+	if ns == S.DYING and _model != null:
+		_y_at_death = _model.position.y
+		_yaw_at_death = _model.rotation.y
+	set_state(ns as S)
+	if ns == S.DEAD:
+		_hide_lights()
+
+
+func _hide_lights() -> void:
+	if _model_light:
+		_model_light.visible = false
+	if head:
+		var l := head.get_node_or_null("LuzOjos") as OmniLight3D
+		if l:
+			l.visible = false
+
+
+## Efectos que el anfitrión repite en todas las pantallas.
+func apply_fx(kind: String, pos: Vector3, amount: float, amount2: float) -> void:
+	match kind:
+		"splash":
+			_splash_local(pos, amount)
+		"shake":
+			_shake_local(amount, amount2)
 
 
 func _try_load_model() -> bool:
@@ -292,7 +356,7 @@ func set_state(s: S) -> void:
 
 ## El jugador acaba de empezar a girar una válvula: el Leviatán se enfurece y sale.
 func provoke() -> void:
-	if not is_alive():
+	if _is_puppet() or not is_alive():
 		return
 	anger = minf(anger + 0.34, 1.2)
 	if state == S.SUBMERGED or state == S.SINKING or state == S.SWIMMING:
@@ -328,7 +392,7 @@ func _begin_rise(angry := false) -> void:
 
 
 func die() -> void:
-	if not is_alive():
+	if _is_puppet() or not is_alive():
 		return
 	set_state(S.DYING)
 	if _model != null:
@@ -356,13 +420,28 @@ func set_dead_instantly() -> void:
 
 
 func _shake(seconds: float, amount: float) -> void:
+	_shake_local(seconds, amount)
+	if _in_net_game():
+		Net.relay_leviathan_fx("shake", Vector3.ZERO, seconds, amount)
+
+
+func _shake_local(seconds: float, amount: float) -> void:
 	var mm := get_tree().get_first_node_in_group("mission_manager")
-	if mm != null and mm.has_method("_shake_camera") and _player != null:
-		# solo si estás dentro de la cámara
-		mm.call("_shake_camera", seconds, amount)
+	if mm == null or not mm.has_method("_shake_camera"):
+		return
+	# solo si estás dentro de la cámara
+	if chamber != null and chamber.has_method("local_in_chamber") and not chamber.local_in_chamber():
+		return
+	mm.call("_shake_camera", seconds, amount)
 
 
 func _splash(pos_local: Vector3, size: float) -> void:
+	_splash_local(pos_local, size)
+	if _in_net_game():
+		Net.relay_leviathan_fx("splash", pos_local, size, 0.0)
+
+
+func _splash_local(pos_local: Vector3, size: float) -> void:
 	var p := CPUParticles3D.new()
 	p.one_shot = true
 	p.emitting = true
@@ -393,12 +472,30 @@ func _process(delta: float) -> void:
 		return
 	_t += delta
 	_state_t += delta
-	if _player == null:
-		_player = get_tree().get_first_node_in_group("player") as Node3D
+	if _is_puppet():
+		_net_apply(delta)
+		head_pos = head_pos.lerp(head_goal, 1.0 - exp(-delta * 10.0))
+		_pose(delta)
+		return
+	_pick_target(delta)
 	_update_state(delta)
 	var k := 1.0 - exp(-delta * _follow_speed())
 	head_pos = head_pos.lerp(head_goal, k)
 	_pose(delta)
+
+
+## Persigue al jugador vivo más cercano (en red puede ser un compañero).
+func _pick_target(delta: float) -> void:
+	_target_t -= delta
+	if _target_t > 0.0 and _player != null:
+		return
+	_target_t = 0.25
+	if _in_net_game():
+		var best := Net.nearest_alive_player(global_position)
+		if best != null:
+			_player = best
+	elif _player == null:
+		_player = get_tree().get_first_node_in_group("player") as Node3D
 
 
 func _follow_speed() -> float:
@@ -416,6 +513,8 @@ func _follow_speed() -> float:
 
 
 func _player_local() -> Vector3:
+	if _is_puppet():
+		return _snap_target
 	if _player == null:
 		return Vector3.ZERO
 	return to_local(_player.global_position)
@@ -481,11 +580,7 @@ func _update_state(delta: float) -> void:
 			head.set_jaw(0.5 + 0.5 * sin(_t * 3.0) * clampf(1.0 - _state_t / 5.0, 0.0, 1.0))
 			if _state_t > 6.0:
 				set_state(S.DEAD)
-				if _model_light:
-					_model_light.visible = false
-				var l := head.get_node_or_null("LuzOjos") as OmniLight3D
-				if l:
-					l.visible = false
+				_hide_lights()
 		S.DEAD:
 			arch = 0.0
 			head.set_jaw(0.7)
@@ -710,4 +805,10 @@ func make_kill_head() -> Node3D:
 	get_parent().add_child(pivot)
 	_hidden_for_kill = true
 	visible = false
+	if _in_net_game():
+		# En red la partida sigue (compañeros, modo espectador): vuelve a mostrarse tras devorarte.
+		get_tree().create_timer(KillSequence.TOTAL + 0.5).timeout.connect(func() -> void:
+			if is_instance_valid(self):
+				_hidden_for_kill = false
+				visible = true)
 	return pivot

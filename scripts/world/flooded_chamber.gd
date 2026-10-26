@@ -387,11 +387,21 @@ func _build_axe() -> void:
 
 # -------------------------------------------------------------------- lógica
 
-func player_in_chamber() -> bool:
-	if _player == null:
-		return false
-	var p := to_local(_player.global_position)
+func _in_chamber(pos: Vector3) -> bool:
+	var p := to_local(pos)
 	return p.x > x0 - 1.5 and absf(p.z) < width / 2.0 + 1.0 and p.y < ceil_y
+
+
+## ¿Hay alguien vivo dentro de la cámara? (en red cuenta cualquier jugador, no solo el local)
+func player_in_chamber() -> bool:
+	for p in Net.alive_players():
+		if _in_chamber(p.global_position):
+			return true
+	return false
+
+
+func local_in_chamber() -> bool:
+	return _player != null and _in_chamber(_player.global_position)
 
 
 func on_valve_started(_valve: ChamberValve) -> void:
@@ -420,7 +430,7 @@ func _drain_to(s: int, seconds: float) -> void:
 	_wl_tween = create_tween()
 	_wl_tween.tween_property(self, "water_y", water_levels[clampi(s, 0, 3)], seconds).set_trans(Tween.TRANS_SINE)
 	Sfx.play(self, "drain_water", 2.0)
-	NoiseManager.emit_noise(to_global(Vector3(x0 + 10.0, 0.0, 0.0)), 1.0)
+	NoiseManager.emit_world_noise(to_global(Vector3(x0 + 10.0, 0.0, 0.0)), 1.0)
 
 
 func _finish_drain() -> void:
@@ -470,10 +480,10 @@ func _physics_process(delta: float) -> void:
 		water_mesh.position.y = water_y + sin(Time.get_ticks_msec() * 0.0014) * 0.03
 		water_mesh.visible = water_y > floor_y + 0.08
 	_ambient_t -= delta
-	if _ambient_t <= 0.0 and player_in_chamber():
+	if _ambient_t <= 0.0 and local_in_chamber():
 		_ambient_t = _rng.randf_range(4.0, 9.0)
 		Sfx.play(self, "water_lap" if _rng.randf() < 0.5 else "drip", -12.0)
-	if devoured or drained or _player == null:
+	if devoured or drained or _player == null or Net.local_dead:
 		return
 	var p := to_local(_player.global_position)
 	if p.x > x0 - 0.5 and absf(p.z) < width / 2.0 + 0.5 and p.y < water_y + 1.1:

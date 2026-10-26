@@ -183,7 +183,7 @@ func _arrived(bottom: bool) -> void:
 	moving = false
 	at_bottom = bottom
 	Sfx.play(self, "lift_stop", 0.0)
-	NoiseManager.emit_noise(platform.global_position, noise_loudness)
+	NoiseManager.emit_world_noise(platform.global_position, noise_loudness)
 
 
 ## Para cargar partida: coloca la plataforma sin animación.
@@ -205,7 +205,7 @@ func _physics_process(delta: float) -> void:
 	if _noise_t <= 0.0:
 		_noise_t = noise_every
 		# el ruido sale de arriba: así las criaturas se juntan en la boca del pozo
-		NoiseManager.emit_noise(global_position + Vector3(shaft_size / 2.0, 0.0, 0.0), noise_loudness)
+		NoiseManager.emit_world_noise(global_position + Vector3(shaft_size / 2.0, 0.0, 0.0), noise_loudness)
 	if _creak_t <= 0.0:
 		_creak_t = 2.4
 		Sfx.play(self, "lift_creak", -4.0)

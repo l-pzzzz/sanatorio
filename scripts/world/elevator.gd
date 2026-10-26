@@ -171,4 +171,4 @@ func _physics_process(delta: float) -> void:
 	noise_left -= delta
 	if noise_left <= 0.0:
 		noise_left = 1.2
-		NoiseManager.emit_noise(cab.global_position, 0.5)
+		NoiseManager.emit_world_noise(cab.global_position, 0.5)

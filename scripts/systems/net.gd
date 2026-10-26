@@ -31,6 +31,9 @@ const ENEMY_RATE := 15.0
 const MENU_SCENE := "res://scenes/menu_principal.tscn"
 const PLAYER_SCENE := "res://scenes/player/player.tscn"
 const SPAWN_OFFSETS := [Vector3.ZERO, Vector3(1.1, 0, 0), Vector3(-1.1, 0, 0), Vector3(0, 0, 1.1)]
+## Munición y lanzables: cada jugador lleva los suyos. Todo lo demás (llaves, fusibles, hacha,
+## bidones, pistola...) es del equipo: lo recoge uno y todos lo tienen.
+const PERSONAL_ITEMS := ["dardos", "botella", "bengala", "linterna"]
 const LEVELS := [
 	["SANATORIO SANTA MARTA", "res://scenes/sanatorio.tscn"],
 	["NIVEL 2: LOS SÓTANOS", "res://scenes/nivel_2_sotano.tscn"],
@@ -52,6 +55,7 @@ var level_key := ""
 var mission: MissionManager
 
 var enemy_snap := {}              ## ruta -> último estado recibido del anfitrión
+var lev_snap: Array = []          ## último estado del Leviatán recibido del anfitrión
 var enemy_hold := {}              ## ruta -> instante hasta el que no se mueve (secuencia de muerte)
 var spectate_id := 0
 var spectate_layer: CanvasLayer
@@ -319,6 +323,7 @@ func _reset_level_state() -> void:
 	puppets.clear()
 	dead.clear()
 	enemy_snap.clear()
+	lev_snap = []
 	enemy_hold.clear()
 	local_dead = false
 	spectate_id = 0
@@ -410,6 +415,7 @@ func _physics_process(delta: float) -> void:
 		if _enemy_t <= 0.0:
 			_enemy_t = 1.0 / ENEMY_RATE
 			_send_enemies()
+			_send_leviathan()
 	else:
 		_drive_enemies(delta)
 
@@ -543,7 +549,7 @@ func should_relay_sfx(from: Node) -> bool:
 		return false
 	var n := from
 	while n != null:
-		if n.is_in_group("enemies"):
+		if n.is_in_group("enemies") or n.is_in_group("leviathan"):
 			return true
 		n = n.get_parent()
 	return false
@@ -593,6 +599,74 @@ func relay_report(event: String, id: String) -> void:
 func _remote_report(key: String, event: String, id: String) -> void:
 	if key == level_key and mission:
 		mission.report(event, id)
+
+
+# ------------------------------------------------------------ jugadores vivos
+
+## Jugadores que siguen en pie (el local y los títeres con posición conocida).
+func is_shared_item(id: String) -> bool:
+	return not PERSONAL_ITEMS.has(id)
+
+
+func alive_players() -> Array[PlayerCharacter]:
+	var out: Array[PlayerCharacter] = []
+	if not is_online() or not in_game:
+		var me := get_tree().get_first_node_in_group("player") as PlayerCharacter
+		if me:
+			out.append(me)
+		return out
+	if mission and is_instance_valid(mission) and mission.player and not local_dead:
+		out.append(mission.player)
+	for id in puppets:
+		var pup := puppets[id] as PlayerCharacter
+		if is_instance_valid(pup) and pup.net_has_state and not dead.has(id):
+			out.append(pup)
+	return out
+
+
+func nearest_alive_player(pos: Vector3) -> PlayerCharacter:
+	var best: PlayerCharacter = null
+	var best_d := INF
+	for c in alive_players():
+		var d := pos.distance_to(c.global_position)
+		if d < best_d:
+			best_d = d
+			best = c
+	return best
+
+
+# ------------------------------------------------------------ Leviatán (nivel 3)
+
+func _leviathan() -> Node:
+	return get_tree().get_first_node_in_group("leviathan")
+
+
+func _send_leviathan() -> void:
+	var lev := _leviathan()
+	if lev == null or not lev.has_method("net_pack"):
+		return
+	_lev_state.rpc(level_key, lev.call("net_pack"))
+
+
+@rpc("authority", "unreliable_ordered")
+func _lev_state(key: String, data: Array) -> void:
+	if key == level_key:
+		lev_snap = data
+
+
+## Efectos puntuales del Leviatán (salpicaduras, temblor): el anfitrión los manda a todos.
+func relay_leviathan_fx(kind: String, pos: Vector3, amount: float, amount2: float) -> void:
+	if is_host() and in_game:
+		_lev_fx.rpc(level_key, kind, pos, amount, amount2)
+
+
+@rpc("authority", "unreliable")
+func _lev_fx(key: String, kind: String, pos: Vector3, amount: float, amount2: float) -> void:
+	if key != level_key:
+		return
+	var lev := _leviathan()
+	if lev and lev.has_method("apply_fx"):
+		lev.call("apply_fx", kind, pos, amount, amount2)
 
 
 # ------------------------------------------------------------ criaturas

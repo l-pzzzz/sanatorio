@@ -196,6 +196,11 @@ func remove_item(id: String, amount := 1) -> void:
 	else:
 		inventory[id] = left
 	inventory_changed.emit()
+	# Objeto del equipo gastado por un compañero (acción repetida): tú también lo pierdes.
+	if is_remote and Net.replaying and Net.is_shared_item(id):
+		var me := get_tree().get_first_node_in_group("player") as PlayerCharacter
+		if me != null and me != self:
+			me.remove_item(id, amount)
 
 
 # -------------------------------------------------------------------- linterna

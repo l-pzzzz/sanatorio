@@ -114,7 +114,7 @@ func interact(player: PlayerCharacter) -> void:
 		return
 	if not _can_open(player):
 		Sfx.play(self, "locked")
-		NoiseManager.emit_noise(global_position, 0.25)
+		NoiseManager.emit_world_noise(global_position, 0.25)
 		if lock_id == POWER:
 			toast(Lang.t("La cerradura eléctrica no responde. Hay que restaurar la energía."), 3.5)
 		else:
@@ -133,7 +133,7 @@ func interact(player: PlayerCharacter) -> void:
 func open() -> void:
 	busy = true
 	Sfx.play(self, "flesh_tear" if lock_id == "hacha" else "door")
-	NoiseManager.emit_noise(global_position, open_noise)
+	NoiseManager.emit_world_noise(global_position, open_noise)
 	_set_indicator(Color(0.2, 1.0, 0.3))
 	var tween := create_tween()
 	# La reja se pliega hacia el suelo (antes subía y en los niveles de dos pisos

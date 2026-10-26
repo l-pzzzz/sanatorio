@@ -371,6 +371,7 @@ const EN := {
 	"ATRAPARON A TODO EL EQUIPO": "THE WHOLE TEAM WAS CAUGHT",
 	"Enter para reintentar el nivel (todos)": "Press Enter to retry the level (everyone)",
 	"%s encontró linternas para todos. F para encender o apagar.": "%s found flashlights for everyone. F to turn it on or off.",
+	"%s encontró: %s (ahora lo tiene todo el equipo)": "%s found: %s (the whole team has it now)",
 	"SALIR DE LA PARTIDA": "LEAVE GAME",
 	"TODOS FUERON ATRAPADOS": "EVERYONE WAS CAUGHT",
 	"NIVEL 3: LA RAÍZ": "LEVEL 3: THE ROOT",

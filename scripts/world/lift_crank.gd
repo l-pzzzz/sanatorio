@@ -51,5 +51,5 @@ func interact(_player: PlayerCharacter) -> void:
 		_:
 			lift.go_to(true)
 	var mm := mission()
-	if mm and mode == ON_BOARD and not lift.at_bottom:
+	if mm and mode == ON_BOARD and not lift.at_bottom and not Net.replaying:
 		mm.show_toast(Lang.t("El ascensor chirría y baja... todo lo que se acerca lo oye."), 4.0)

@@ -71,7 +71,7 @@ func interact(player: PlayerCharacter) -> void:
 	left = charge_time
 	Sfx.play(self, "power_on", 0.0)
 	Sfx.play(self, "alarm", -6.0)
-	NoiseManager.emit_noise(global_position, 1.8)
+	NoiseManager.emit_world_noise(global_position, 1.8)
 	toast(Lang.t("¡Incinerador encendido! Aguanta %d segundos: el ruido atrae a las dos criaturas. Cuando prenda, el fuego se propaga: ¡tendrás que salir por el túnel del noreste!") % int(charge_time), 6.0)
 
 
@@ -86,7 +86,7 @@ func _process(delta: float) -> void:
 	noise_t -= delta
 	if noise_t <= 0.0:
 		noise_t = 3.0
-		NoiseManager.emit_noise(global_position, 1.8)
+		NoiseManager.emit_world_noise(global_position, 1.8)
 	var secs := ceili(left)
 	if secs != last_count and secs >= 0 and secs % 5 == 0:
 		last_count = secs

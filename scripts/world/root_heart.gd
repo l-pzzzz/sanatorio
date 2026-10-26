@@ -141,7 +141,7 @@ func _hit() -> void:
 	health = maxf(0.0, health - hit_damage)
 	Sfx.play(self, "flesh_tear", 2.0)
 	Sfx.play(self, "land", -2.0)
-	NoiseManager.emit_noise(global_position, hit_noise)
+	NoiseManager.emit_world_noise(global_position, hit_noise)
 	# golpe visual: el corazón se hincha y se pone rojo brillante un instante
 	var tw := create_tween()
 	tw.tween_property(body, "scale", body.scale * 1.18, 0.07)
@@ -206,7 +206,7 @@ func _die() -> void:
 	collision_layer = 0
 	Sfx.play(self, "explosion", 0.0)
 	Sfx.play(self, "kill_roar_eco", -4.0)
-	NoiseManager.emit_noise(global_position, 2.0)
+	NoiseManager.emit_world_noise(global_position, 2.0)
 	_screen_flash(0.6)
 	_shake(2.2)
 	var tw := create_tween()

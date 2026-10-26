@@ -110,6 +110,14 @@ func emit_noise(noise_position: Vector3, loudness: float) -> void:
 	Net.relay_noise(noise_position, loudness)     # cliente en red: también lo oye el anfitrión
 
 
+## Ruido de un objeto del mundo que TODOS los jugadores repiten (válvulas, ascensores, puertas...).
+## En red solo lo emite el anfitrión: sus criaturas son las únicas que oyen y así no se duplica.
+func emit_world_noise(noise_position: Vector3, loudness: float) -> void:
+	if Net.is_client() and Net.in_game:
+		return
+	noise_emitted.emit(noise_position, loudness)
+
+
 ## Ruido que llegó de otro jugador por red (no se vuelve a reenviar).
 func emit_noise_from_network(noise_position: Vector3, loudness: float) -> void:
 	noise_emitted.emit(noise_position, loudness)

@@ -52,7 +52,7 @@ func interact(_player: PlayerCharacter) -> void:
 		return
 	ready_at = Time.get_ticks_msec() / 1000.0 + cooldown
 	Sfx.play(self, "lever_clunk")
-	NoiseManager.emit_noise(global_position, 0.35)
+	NoiseManager.emit_world_noise(global_position, 0.35)
 	zone.call("arm", active_time, stun_time)
 	toast(Lang.t("¡Trampa activada! Cualquier criatura que pise la zona de franjas quedará aturdida."), 4.0)
 	var tween := create_tween()
